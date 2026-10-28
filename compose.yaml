@@ -1,0 +1,28 @@
+services:
+  mongodb:
+    image: mongo:8.0
+    restart: unless-stopped
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      PORT: 4000
+      MONGODB_URI: mongodb://mongodb:27017/udata_hr
+      JWT_SECRET: ${JWT_SECRET:-local-demo-secret-change-before-public-hosting-udata-2026}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@udata.local}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-ChangeMe123!}
+      SEED_DEMO: ${SEED_DEMO:-true}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+volumes:
+  mongodb_data:

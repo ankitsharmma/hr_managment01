@@ -1,0 +1,417 @@
+{
+  "employees": [
+    {
+      "id": "c21771f0-a808-4f90-9920-e796cb82f5aa",
+      "name": "Priya Sharma",
+      "role": "Product Designer",
+      "dept": "Design",
+      "email": "priya@acme.com",
+      "status": "Active",
+      "salary": 1200000,
+      "joinDate": "2023-02-14"
+    },
+    {
+      "id": "58ee858b-1d6d-4c5f-86c0-838bd564f202",
+      "name": "Devon Reed",
+      "role": "Account Executive",
+      "dept": "Sales",
+      "email": "devon@acme.com",
+      "status": "Active",
+      "salary": 900000,
+      "joinDate": "2022-08-01"
+    },
+    {
+      "id": "df8c9ebe-b767-4d16-878d-98d1b4f0dee1",
+      "name": "Sana Khan",
+      "role": "Backend Engineer",
+      "dept": "Engineering",
+      "email": "sana@acme.com",
+      "status": "Active",
+      "salary": 1500000,
+      "joinDate": "2021-11-20"
+    },
+    {
+      "id": "6d082d1e-eac7-4635-bee8-e3d77f8b3942",
+      "name": "Marcus Ortiz",
+      "role": "Recruiter",
+      "dept": "People",
+      "email": "marcus@acme.com",
+      "status": "Active",
+      "salary": 850000,
+      "joinDate": "2024-01-10"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "8eba17cb-e3c6-4d8f-8f85-c55f618fa7a4",
+      "name": "Alina Torres",
+      "jobId": "205386fb-5f40-4638-b157-c8dbe70750f1",
+      "email": "alina.t@example.com",
+      "phone": "+91 98765 43210",
+      "resumeUrl": "",
+      "resumeFile": "",
+      "resumeFileName": "",
+      "source": "Referral",
+      "referredBy": "Priya Sharma",
+      "notes": "Strong portfolio, referred by Priya.",
+      "experienceType": "Experienced",
+      "experienceYears": "4",
+      "gender": "Female",
+      "dob": "1996-04-12",
+      "noticePeriod": "30 days",
+      "currentCTC": "14,00,000",
+      "expectedCTC": "18,00,000",
+      "currentAddress": "Koramangala, Bengaluru",
+      "education": {
+        "degree": "B.Des",
+        "institution": "NID Ahmedabad",
+        "year": "2018"
+      },
+      "cvSharedWith": "",
+      "cvShareStatus": "",
+      "shortlisted": false,
+      "resumeMatchScore": "",
+      "hiredDate": "",
+      "activity": [
+        {
+          "date": "2026-08-28T09:00:00.000Z",
+          "message": "Referred by Priya Sharma"
+        }
+      ],
+      "interviews": [],
+      "offerStatus": "",
+      "stage": "Applied",
+      "appliedDate": "2026-08-28",
+      "rejectionReason": "",
+      "negotiatedCTC": "",
+      "offerPackageApprovals": null,
+      "offerLetterGenerated": false,
+      "offerLetterApproval": null,
+      "offerShared": ""
+    },
+    {
+      "id": "8d023adc-3618-40be-99c8-fe7509253dea",
+      "name": "Ines Varga",
+      "jobId": "205386fb-5f40-4638-b157-c8dbe70750f1",
+      "email": "ines.v@example.com",
+      "phone": "+91 91234 56780",
+      "resumeUrl": "",
+      "resumeFile": "",
+      "resumeFileName": "",
+      "source": "LinkedIn",
+      "referredBy": "",
+      "notes": "",
+      "experienceType": "Experienced",
+      "experienceYears": "6",
+      "gender": "Female",
+      "dob": "1993-11-02",
+      "noticePeriod": "60 days",
+      "currentCTC": "20,00,000",
+      "expectedCTC": "26,00,000",
+      "currentAddress": "Indiranagar, Bengaluru",
+      "education": {
+        "degree": "M.Des",
+        "institution": "IIT Bombay",
+        "year": "2016"
+      },
+      "cvSharedWith": "Rhea Kapoor",
+      "cvShareStatus": "Shortlisted",
+      "shortlisted": true,
+      "resumeMatchScore": 72,
+      "hiredDate": "",
+      "activity": [
+        {
+          "date": "2026-08-20T09:00:00.000Z",
+          "message": "Added as a direct candidate"
+        },
+        {
+          "date": "2026-08-21T09:00:00.000Z",
+          "message": "CV shared with Rhea Kapoor"
+        },
+        {
+          "date": "2026-08-22T09:00:00.000Z",
+          "message": "Shortlisted by hiring manager (Rhea Kapoor)"
+        }
+      ],
+      "interviews": [
+        {
+          "id": "b4ff3c46-3044-4ddc-8d99-c7fd8d5aba17",
+          "round": "Round 1",
+          "hiringManager": "Rhea Kapoor",
+          "date": "2026-09-12",
+          "time": "11:00",
+          "status": "Scheduled",
+          "decision": "Pending",
+          "feedback": "",
+          "scorecard": null
+        }
+      ],
+      "offerStatus": "",
+      "stage": "Interviewing",
+      "appliedDate": "2026-08-20",
+      "rejectionReason": "",
+      "negotiatedCTC": "",
+      "offerPackageApprovals": null,
+      "offerLetterGenerated": false,
+      "offerLetterApproval": null,
+      "offerShared": ""
+    },
+    {
+      "id": "e86f2a26-a292-419a-8de7-2781c2f1bc2f",
+      "name": "Tomas Bergman",
+      "jobId": "205386fb-5f40-4638-b157-c8dbe70750f1",
+      "email": "tomas.b@example.com",
+      "phone": "",
+      "resumeUrl": "",
+      "resumeFile": "",
+      "resumeFileName": "",
+      "source": "Job Board",
+      "referredBy": "",
+      "notes": "Great sales track record.",
+      "experienceType": "Experienced",
+      "experienceYears": "8",
+      "gender": "Male",
+      "dob": "1990-06-23",
+      "noticePeriod": "Immediate",
+      "currentCTC": "8,00,000",
+      "expectedCTC": "9,50,000",
+      "currentAddress": "Saket, Delhi",
+      "education": {
+        "degree": "BBA",
+        "institution": "Delhi University",
+        "year": "2012"
+      },
+      "cvSharedWith": "Karan Bhatt",
+      "cvShareStatus": "Shortlisted",
+      "shortlisted": true,
+      "resumeMatchScore": 58,
+      "hiredDate": "",
+      "activity": [
+        {
+          "date": "2026-08-05T09:00:00.000Z",
+          "message": "Added as a direct candidate"
+        },
+        {
+          "date": "2026-08-06T09:00:00.000Z",
+          "message": "Shortlisted directly by recruiter"
+        }
+      ],
+      "interviews": [
+        {
+          "id": "fdf09ab3-1546-4199-a772-8268874ac182",
+          "round": "Round 1",
+          "hiringManager": "Vikram Nair",
+          "date": "2026-08-10",
+          "time": "10:00",
+          "status": "Completed",
+          "decision": "Proceed",
+          "feedback": "Strong communicator, good fit.",
+          "scorecard": {
+            "communication": 5,
+            "technical": 3,
+            "culture": 4
+          }
+        },
+        {
+          "id": "408a5587-023d-4b12-81e5-eb295a380786",
+          "round": "Final Round",
+          "hiringManager": "Karan Bhatt",
+          "date": "2026-08-20",
+          "time": "15:00",
+          "status": "Completed",
+          "decision": "Selected",
+          "feedback": "Excellent close rate in mock pitch.",
+          "scorecard": {
+            "communication": 5,
+            "technical": 4,
+            "culture": 5
+          }
+        }
+      ],
+      "offerStatus": "",
+      "stage": "Selected",
+      "appliedDate": "2026-08-05",
+      "rejectionReason": "",
+      "negotiatedCTC": "",
+      "offerPackageApprovals": null,
+      "offerLetterGenerated": false,
+      "offerLetterApproval": null,
+      "offerShared": ""
+    },
+    {
+      "id": "327bc30f-bd25-4b48-9ea0-49f3e15195bc",
+      "name": "Meera Nambiar",
+      "jobId": "bd6454d9-f02d-4f0b-a823-48f013e22edf",
+      "email": "meera.n@example.com",
+      "phone": "+91 99887 66554",
+      "resumeUrl": "",
+      "resumeFile": "",
+      "resumeFileName": "",
+      "source": "LinkedIn",
+      "referredBy": "",
+      "notes": "Solid full-stack profile — reviewing against the backend role.",
+      "experienceType": "Experienced",
+      "experienceYears": "5",
+      "gender": "Female",
+      "dob": "1994-02-18",
+      "noticePeriod": "30 days",
+      "currentCTC": "16,00,000",
+      "expectedCTC": "21,00,000",
+      "currentAddress": "Powai, Mumbai",
+      "education": {
+        "degree": "B.Tech",
+        "institution": "VJTI Mumbai",
+        "year": "2015"
+      },
+      "cvSharedWith": "",
+      "cvShareStatus": "",
+      "shortlisted": false,
+      "resumeMatchScore": "",
+      "hiredDate": "",
+      "activity": [
+        {
+          "date": "2026-08-15T09:00:00.000Z",
+          "message": "Added as a candidate for Backend Engineer"
+        }
+      ],
+      "interviews": [],
+      "offerStatus": "",
+      "stage": "Applied",
+      "appliedDate": "2026-08-15",
+      "rejectionReason": "",
+      "negotiatedCTC": "",
+      "offerPackageApprovals": null,
+      "offerLetterGenerated": false,
+      "offerLetterApproval": null,
+      "offerShared": ""
+    }
+  ],
+  "jobs": [
+    {
+      "id": "205386fb-5f40-4638-b157-c8dbe70750f1",
+      "jobCode": "REQ-2026-014",
+      "title": "Product Designer",
+      "designation": "Senior Product Designer",
+      "dept": "Design",
+      "subDept": "Brand & Product",
+      "location": "Remote",
+      "openings": 1,
+      "reqType": "New Requirement",
+      "replacementOf": "",
+      "grade": "M3",
+      "ctc": "18,00,000",
+      "jd": "Own end-to-end product design for the core app, partner with PM/Eng, run discovery and usability studies.",
+      "eligibility": "Immediate joiners preferred; portfolio required.",
+      "qualification": "Bachelor's in Design/HCI or equivalent practical experience.",
+      "roleExpType": "Experienced",
+      "roleExpYears": "4",
+      "raisedBy": "Priya Sharma",
+      "deptHead": "Rhea Kapoor",
+      "approvals": {
+        "hod": {
+          "status": "Approved",
+          "by": "Rhea Kapoor",
+          "date": "2026-08-02"
+        },
+        "siteHead": {
+          "status": "Approved",
+          "by": "Alok Mehra",
+          "date": "2026-08-03"
+        },
+        "taHead": {
+          "status": "Approved",
+          "by": "Nisha Rao",
+          "date": "2026-08-04"
+        }
+      },
+      "assignedRecruiterId": "6d082d1e-eac7-4635-bee8-e3d77f8b3942",
+      "closed": false,
+      "cancelled": false,
+      "postedDate": "2026-08-01"
+    },
+    {
+      "id": "bd6454d9-f02d-4f0b-a823-48f013e22edf",
+      "jobCode": "REQ-2026-015",
+      "title": "Backend Engineer",
+      "designation": "Backend Engineer II",
+      "dept": "Engineering",
+      "subDept": "Platform",
+      "location": "Bengaluru",
+      "openings": 2,
+      "reqType": "New Requirement",
+      "replacementOf": "",
+      "grade": "M2",
+      "ctc": "22,00,000",
+      "jd": "Build and scale backend services for the platform team; own API design and reliability.",
+      "eligibility": "",
+      "qualification": "Bachelor's in CS or equivalent.",
+      "roleExpType": "Experienced",
+      "roleExpYears": "3",
+      "raisedBy": "Sana Khan",
+      "deptHead": "Vikram Nair",
+      "approvals": {
+        "hod": {
+          "status": "Approved",
+          "by": "Vikram Nair",
+          "date": "2026-07-16"
+        },
+        "siteHead": {
+          "status": "Pending",
+          "by": "",
+          "date": ""
+        },
+        "taHead": {
+          "status": "Pending",
+          "by": "",
+          "date": ""
+        }
+      },
+      "assignedRecruiterId": "",
+      "closed": false,
+      "cancelled": false,
+      "postedDate": "2026-07-15"
+    },
+    {
+      "id": "193e1da9-f68a-4389-a5dc-6c189ee25731",
+      "jobCode": "REQ-2026-016",
+      "title": "Account Executive",
+      "designation": "Account Executive",
+      "dept": "Sales",
+      "subDept": "",
+      "location": "Delhi",
+      "openings": 1,
+      "reqType": "Replacement",
+      "replacementOf": "Devon Reed",
+      "grade": "M1",
+      "ctc": "9,00,000",
+      "jd": "Manage the full sales cycle for mid-market accounts.",
+      "eligibility": "",
+      "qualification": "",
+      "roleExpType": "Fresher",
+      "roleExpYears": "",
+      "raisedBy": "Devon Reed",
+      "deptHead": "Karan Bhatt",
+      "approvals": {
+        "hod": {
+          "status": "Pending",
+          "by": "",
+          "date": ""
+        },
+        "siteHead": {
+          "status": "Pending",
+          "by": "",
+          "date": ""
+        },
+        "taHead": {
+          "status": "Pending",
+          "by": "",
+          "date": ""
+        }
+      },
+      "assignedRecruiterId": "",
+      "closed": false,
+      "cancelled": false,
+      "postedDate": "2026-07-20"
+    }
+  ]
+}

@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>U-data HR</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+  :root{
+    --plum:#5B2A9D; --plum-deep:#3B1868; --stone:#F7F5FC; --card:#FFFFFF;
+    --mustard:#8B5CF6; --sage:#2F8F5B; --rose:#C1443A; --ink:#241C33;
+    --ink-soft:#6E6480; --line:#E6E1F2;
+  }
+  *{box-sizing:border-box;}
+
+  /* ── LAYOUT ROOT ── */
+  html,body{margin:0;padding:0;width:100vw;height:100vh;overflow:hidden;background:var(--stone);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;-webkit-font-smoothing:antialiased;}
+  #root{display:flex;flex-direction:row;width:100vw;height:100vh;overflow:hidden;}
+
+  /* ── LEFT SIDEBAR ── */
+  .app-sidebar{width:280px;flex-shrink:0;height:100vh;overflow-y:auto;background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;position:relative;z-index:10;}
+
+  /* ── RIGHT CONTENT ── */
+  .app-main{flex:1;min-width:0;height:100vh;overflow-y:auto;padding:28px 36px 60px;background:#f8f9fb;}
+
+  /* ── HAMBURGER (hidden on desktop) ── */
+  .hamburger{display:none;position:fixed;top:14px;left:14px;z-index:100;background:var(--plum);border:none;border-radius:8px;width:40px;height:40px;cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:5px;padding:8px;}
+  .hamburger span{display:block;width:22px;height:2px;background:#fff;border-radius:2px;}
+  .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(30,20,50,.4);z-index:9;}
+  .sidebar-overlay.open{display:block;}
+
+  /* ── TABLE WRAPPER ── */
+  .table-scroll{width:100%;overflow-x:auto;}
+  .table-scroll table{width:100%;min-width:700px;}
+  thead th{position:sticky;top:0;background:#fff;z-index:2;}
+
+  /* ── LEGACY class aliases (kept so inner renderers don't break) ── */
+  .app{display:contents;}
+  .app.with-secondary{display:contents;}
+  .sidebar-secondary{background:#fff;border-right:1px solid var(--line);padding:26px 14px;}
+  .sidebar-secondary-label{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);padding:0 10px 12px;}
+  .nav-subitem2{padding:9px 10px;border-radius:8px;font-size:13px;color:var(--ink);cursor:pointer;margin-bottom:2px;}
+  .nav-subitem2:hover{background:var(--stone);}
+  .nav-subitem2.active{background:var(--plum);color:#fff;}
+  .sidebar{background:var(--plum);color:#EDE7E9;padding:26px 16px;display:flex;flex-direction:column;}
+  .brand{font-family:'Source Serif 4',serif;font-size:21px;color:#fff;margin-bottom:28px;display:flex;align-items:center;gap:8px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--mustard);}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;color:#E9E1E7;cursor:pointer;margin-bottom:2px;}
+  .nav-item.active{background:rgba(255,255,255,.12);color:#fff;}
+  .nav-item:hover{background:rgba(255,255,255,.07);}
+  .nav-group{margin-bottom:6px;}
+  .nav-group-label{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;color:#E9E1E7;font-weight:600;letter-spacing:.01em;}
+  .nav-subitem{display:block;padding:7px 10px 7px 34px;border-radius:8px;font-size:13px;color:#CBB9C6;cursor:pointer;margin-bottom:1px;}
+  .nav-subitem.active{background:rgba(255,255,255,.14);color:#fff;}
+  .nav-subitem:hover{background:rgba(255,255,255,.07);color:#fff;}
+  .sidebar-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#B7A7B4;}
+  .main{min-width:0;width:100%;}
+  .topbar{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+  .greeting h1{font-family:'Source Serif 4',serif;font-weight:600;font-size:26px;margin:0 0 4px;color:var(--plum-deep);}
+  .greeting p{margin:0;color:var(--ink-soft);font-size:13px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:18px;}
+  .card h3{margin:0 0 14px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+  .stat-row{display:flex;gap:34px;flex-wrap:wrap;}
+  .stat .num{font-family:'Source Serif 4',serif;font-size:30px;color:var(--plum-deep);}
+  .stat .label{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);padding:8px 10px;border-bottom:1px solid var(--line);}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  .btn{background:var(--plum);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;}
+  .btn:hover{background:var(--plum-deep);}
+  .btn.secondary{background:transparent;color:var(--plum);border:1px solid var(--line);}
+  .btn.small{padding:5px 10px;font-size:12px;}
+  .btn.sage{background:var(--sage);}
+  .btn.rose{background:var(--rose);}
+  .btn.mustard{background:var(--mustard);}
+  .tag{font-size:11px;padding:3px 9px;border-radius:12px;background:#EFE9FB;color:var(--mustard);font-weight:600;}
+  .tag.approved{background:#E6F4EC;color:var(--sage);}
+  .tag.rejected{background:#F7E6E4;color:var(--rose);}
+  .tag.pending{background:#EFE9FB;color:var(--mustard);}
+  .tag.closed{background:#EDEAF5;color:var(--ink-soft);}
+  .tag.cancelled{background:#F2EDE9;color:#8A6A55;}
+  .metric-row{display:flex;gap:28px;flex-wrap:wrap;}
+  .metric-row .stat .num{font-size:26px;}
+  .replacement-field{display:none;}
+  .replacement-field.show{display:block;}
+  .section{display:none;}
+  .section.active{display:block;}
+  .row-between{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+  .modal-bg{display:none;position:fixed;inset:0;background:rgba(42,33,48,.45);align-items:center;justify-content:center;z-index:50;}
+  .modal-bg.open{display:flex;}
+  .modal{background:var(--card);border-radius:14px;padding:24px;width:380px;max-width:90vw;}
+  .modal h3{margin:0 0 16px;font-size:16px;color:var(--plum-deep);font-family:'Source Serif 4',serif;}
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .field input, .field select, .field textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;
+  }
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;}
+  .empty{color:var(--ink-soft);font-size:13px;padding:20px 0;text-align:center;}
+  .pipeline-cols{display:grid;gap:12px;overflow-x:auto;}
+  .pcol{min-width:150px;}
+  .pcol h4{font-size:12px;color:var(--ink-soft);margin:0 0 10px;text-transform:uppercase;letter-spacing:.03em;}
+  .ccard{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px;cursor:pointer;}
+  .ccard:hover{border-color:var(--mustard);}
+  .ccard .cname{font-weight:600;margin-bottom:2px;}
+  .ccard-meta{font-size:11px;color:var(--ink-soft);margin-bottom:6px;}
+  .ccard-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .ccard-actions button{position:relative;z-index:2;}
+  .source-tag{background:#EFE9FB;color:var(--plum-deep);}
+  .approval-track{display:flex;flex-direction:column;gap:10px;margin-bottom:14px;}
+  .approval-step{border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .approval-step-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .approval-step-head b{font-size:13px;}
+  .approval-meta{font-size:12px;color:var(--ink-soft);}
+  .approval-actions{display:flex;gap:8px;margin-top:6px;}
+  .recruiter-list{max-height:150px;overflow-y:auto;border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  .recruiter-list label{display:flex;align-items:center;gap:8px;font-size:13px;padding:4px 0;}
+  .file-row{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+  .badge-locked{font-size:11px;color:var(--ink-soft);font-style:italic;}
+  .filter-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+  .filter-bar input[type=text], .filter-bar select{padding:7px 10px;border:1px solid var(--line);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;}
+  .filter-bar input[type=text]{min-width:190px;}
+  .filter-bar label.check{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-soft);}
+  .subtab-bar{display:none;}
+  .subtab{padding:8px 14px;font-size:13px;color:var(--ink-soft);cursor:pointer;border-bottom:2px solid transparent;}
+  .subtab:hover{color:var(--plum);}
+  .subtab.active{color:var(--plum-deep);border-bottom-color:var(--plum);font-weight:600;}
+  .edu-row{display:grid;grid-template-columns:1fr 1fr 90px;gap:8px;}
+  .modal.wide{width:460px;}
+  .modal-scroll{max-height:70vh;overflow-y:auto;padding-right:4px;}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--plum-deep);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none;z-index:99;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .loading{padding:40px;text-align:center;color:var(--ink-soft);}
+  .clockbox{display:flex;align-items:center;gap:16px;}
+  .clockstatus{font-size:13px;color:var(--ink-soft);}
+
+  /* drag & drop */
+  .ccard{transition:box-shadow .15s, transform .15s;}
+  .ccard:hover{box-shadow:0 4px 14px rgba(42,33,48,.08); transform:translateY(-1px);}
+  .ccard.dragging{opacity:.45;}
+  .pcol.drop-hover{outline:2px dashed var(--mustard);outline-offset:4px;border-radius:10px;}
+
+  /* global search */
+  .topsearch{position:relative;margin-bottom:18px;}
+  .topsearch input{width:100%;max-width:420px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-family:inherit;background:#fff;}
+  .search-dropdown{position:absolute;top:100%;left:0;margin-top:4px;width:100%;max-width:420px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(42,33,48,.12);z-index:40;max-height:340px;overflow-y:auto;padding:6px;}
+  .search-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);padding:6px 8px 2px;}
+  .search-result{padding:7px 8px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+  .search-result:hover{background:var(--stone);}
+
+  /* command palette */
+  .cmd-overlay{display:none;position:fixed;inset:0;background:rgba(42,33,48,.45);align-items:flex-start;justify-content:center;z-index:80;padding-top:12vh;}
+  .cmd-overlay.open{display:flex;}
+  .cmd-box{background:#fff;border-radius:14px;width:480px;max-width:92vw;padding:10px;box-shadow:0 20px 50px rgba(42,33,48,.25);}
+  .cmd-box input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;margin-bottom:8px;}
+  .cmd-list{max-height:320px;overflow-y:auto;}
+  .cmd-item{padding:9px 10px;border-radius:8px;font-size:13px;cursor:pointer;}
+  .cmd-item:hover{background:var(--stone);}
+
+  /* bulk action bar */
+  .bulk-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#F1EBFB;padding:10px 12px;border-radius:10px;margin-bottom:14px;}
+
+  /* funnel bars */
+  .funnel-row{margin-bottom:10px;}
+  .funnel-track{background:var(--stone);border-radius:6px;overflow:hidden;height:14px;}
+  .funnel-fill{background:var(--plum);height:100%;transition:width .3s;}
+
+  @media (max-width: 768px){
+    .hamburger{display:flex;}
+    .app-sidebar{position:fixed;top:0;left:0;transform:translateX(-100%);transition:transform .25s ease;z-index:50;}
+    .app-sidebar.open{transform:translateX(0);}
+    .app-main{padding:64px 16px 40px;}
+    .metric-row,.stat-row{gap:16px;}
+    .topsearch input{max-width:none;}
+    .search-dropdown{max-width:none;}
+    .modal.wide{width:94vw;}
+    .edu-row{grid-template-columns:1fr;}
+    .filter-bar input[type=text]{min-width:0;width:100%;}
+    .table-scroll{overflow-x:auto;}
+  }
+</style>
+</head>
+<body>
+<div id="root" class="loading">Loading U-data HR…</div>
+<div class="toast" id="toast"></div>
+<div class="cmd-overlay" id="cmdPalette"></div>
+
+<script>
+const STORAGE_KEYS = {
+  employees: 'udata:employees',
+  candidates: 'udata:candidates',
+  jobs: 'udata:jobs'
+};
+
+let db = { employees: [], candidates: [], jobs: [] };
+let currentTab = 'recruiting'; // legacy, kept so unused legacy render fns below don't error
+let recruitFilters = { search:'', jobId:'all', source:'all', status:'all', showRejected:false };
+let recruitSubTab = 'requisitions'; // legacy, unused by the new sidebar
+let poolSelection = new Set(); // bulk-action selection in table views
+let hmViewManagerId = ''; // hiring-manager-view: which manager is "viewing"
+let myRequestsManagerId = ''; // Hiring Manager > My Requests: which manager is "viewing"
+let globalSearchQuery = '';
+let cmdPaletteQuery = '';
+
+/* ---------- LEFT SIDEBAR NAVIGATION (3 vertical sections, each with a vertical, expand/collapse sub-list) ---------- */
+const NAV_SECTIONS = [
+  { id:'recruitment', label:'Recruitment Module', icon:'✦', items:[
+      {id:'job-requisition', label:'Job Requisition'},
+      {id:'candidates', label:'Candidates'},
+      {id:'referred-candidates', label:'Referred Candidates'},
+      {id:'interview-pipeline', label:'Interview Pipeline'},
+      {id:'offers', label:'Offers'}
+    ] },
+  { id:'people', label:'People Repository', icon:'◇', items:[
+      {id:'all-employees', label:'All Employees'},
+      {id:'documents', label:'Documents'},
+      {id:'org-chart', label:'Org Chart'}
+    ] },
+  { id:'hiringmanager', label:'Hiring Manager', icon:'▣', items:[
+      {id:'my-requests', label:'My Requests'},
+      {id:'approvals', label:'Approvals'},
+      {id:'reports', label:'Reports'}
+    ] }
+];
+let activeModule = 'job-requisition';
+let expandedSections = new Set(['recruitment','people','hiringmanager']);
+
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+async function saveKey(key, value){
+  try{
+    const res = await window.storage.set(key, JSON.stringify(value), true);
+    if(!res) console.error('Save failed for', key);
+    return res;
+  }catch(e){ console.error('Storage set error', key, e); }
+}
+
+async function loadKey(key, fallback){
+  try{
+    const res = await window.storage.get(key, true);
+    return res ? JSON.parse(res.value) : fallback;
+  }catch(e){
+    return fallback;
+  }
+}
+
+function seedData(){
+  const employees = [
+    {id:uid(), name:'Priya Sharma', role:'Product Designer', dept:'Design', email:'priya@acme.com', status:'Active', salary:1200000, joinDate:'2023-02-14'},
+    {id:uid(), name:'Devon Reed', role:'Account Executive', dept:'Sales', email:'devon@acme.com', status:'Active', salary:900000, joinDate:'2022-08-01'},
+    {id:uid(), name:'Sana Khan', role:'Backend Engineer', dept:'Engineering', email:'sana@acme.com', status:'Active', salary:1500000, joinDate:'2021-11-20'},
+    {id:uid(), name:'Marcus Ortiz', role:'Recruiter', dept:'People', email:'marcus@acme.com', status:'Active', salary:850000, joinDate:'2024-01-10'}
+  ];
+  const jobs = [
+    {id:uid(), jobCode:'REQ-2026-014', title:'Product Designer', designation:'Senior Product Designer', dept:'Design', subDept:'Brand & Product', location:'Remote', openings:1,
+      reqType:'New Requirement', replacementOf:'', grade:'M3',
+      ctc:'18,00,000', jd:'Own end-to-end product design for the core app, partner with PM/Eng, run discovery and usability studies.', eligibility:'Immediate joiners preferred; portfolio required.', qualification:'Bachelor\'s in Design/HCI or equivalent practical experience.', roleExpType:'Experienced', roleExpYears:'4',
+      raisedBy:'Priya Sharma', deptHead:'Rhea Kapoor',
+      approvals:{hod:{status:'Approved',by:'Rhea Kapoor',date:'2026-08-02'}, siteHead:{status:'Approved',by:'Alok Mehra',date:'2026-08-03'}, taHead:{status:'Approved',by:'Nisha Rao',date:'2026-08-04'}},
+      assignedRecruiterId:'', closed:false, cancelled:false, postedDate:'2026-08-01'},
+    {id:uid(), jobCode:'REQ-2026-015', title:'Backend Engineer', designation:'Backend Engineer II', dept:'Engineering', subDept:'Platform', location:'Bengaluru', openings:2,
+      reqType:'New Requirement', replacementOf:'', grade:'M2',
+      ctc:'22,00,000', jd:'Build and scale backend services for the platform team; own API design and reliability.', eligibility:'', qualification:'Bachelor\'s in CS or equivalent.', roleExpType:'Experienced', roleExpYears:'3',
+      raisedBy:'Sana Khan', deptHead:'Vikram Nair',
+      approvals:{hod:{status:'Approved',by:'Vikram Nair',date:'2026-07-16'}, siteHead:{status:'Pending',by:'',date:''}, taHead:{status:'Pending',by:'',date:''}},
+      assignedRecruiterId:'', closed:false, cancelled:false, postedDate:'2026-07-15'},
+    {id:uid(), jobCode:'REQ-2026-016', title:'Account Executive', designation:'Account Executive', dept:'Sales', subDept:'', location:'Delhi', openings:1,
+      reqType:'Replacement', replacementOf:'Devon Reed', grade:'M1',
+      ctc:'9,00,000', jd:'Manage the full sales cycle for mid-market accounts.', eligibility:'', qualification:'', roleExpType:'Fresher', roleExpYears:'',
+      raisedBy:'Devon Reed', deptHead:'Karan Bhatt',
+      approvals:{hod:{status:'Pending',by:'',date:''}, siteHead:{status:'Pending',by:'',date:''}, taHead:{status:'Pending',by:'',date:''}},
+      assignedRecruiterId:'', closed:false, cancelled:false, postedDate:'2026-07-20'}
+  ];
+  jobs[0].assignedRecruiterId = employees[3].id;
+  const candidates = [
+    {id:uid(), name:'Alina Torres', jobId:jobs[0].id, email:'alina.t@example.com', phone:'+91 98765 43210', resumeUrl:'', resumeFile:'', resumeFileName:'', source:'Referral', referredBy:'Priya Sharma', notes:'Strong portfolio, referred by Priya.', experienceType:'Experienced', experienceYears:'4',
+      gender:'Female', dob:'1996-04-12', noticePeriod:'30 days', currentCTC:'14,00,000', expectedCTC:'18,00,000', currentAddress:'Koramangala, Bengaluru', education:{degree:'B.Des', institution:'NID Ahmedabad', year:'2018'},
+      cvSharedWith:'', cvShareStatus:'', shortlisted:false, resumeMatchScore:'', hiredDate:'',
+      activity:[{date:'2026-08-28T09:00:00.000Z', message:'Referred by Priya Sharma'}],
+      interviews:[], offerStatus:'', stage:'Applied', appliedDate:'2026-08-28', rejectionReason:'', negotiatedCTC:'', offerPackageApprovals:null, offerLetterGenerated:false, offerLetterApproval:null, offerShared:''},
+    {id:uid(), name:'Ines Varga', jobId:jobs[0].id, email:'ines.v@example.com', phone:'+91 91234 56780', resumeUrl:'', resumeFile:'', resumeFileName:'', source:'LinkedIn', referredBy:'', notes:'', experienceType:'Experienced', experienceYears:'6',
+      gender:'Female', dob:'1993-11-02', noticePeriod:'60 days', currentCTC:'20,00,000', expectedCTC:'26,00,000', currentAddress:'Indiranagar, Bengaluru', education:{degree:'M.Des', institution:'IIT Bombay', year:'2016'},
+      cvSharedWith:'Rhea Kapoor', cvShareStatus:'Shortlisted', shortlisted:true, resumeMatchScore:72, hiredDate:'',
+      activity:[{date:'2026-08-20T09:00:00.000Z', message:'Added as a direct candidate'},{date:'2026-08-21T09:00:00.000Z', message:'CV shared with Rhea Kapoor'},{date:'2026-08-22T09:00:00.000Z', message:'Shortlisted by hiring manager (Rhea Kapoor)'}],
+      interviews:[{id:uid(), round:'Round 1', hiringManager:'Rhea Kapoor', date:'2026-09-12', time:'11:00', status:'Scheduled', decision:'Pending', feedback:'', scorecard:null}], offerStatus:'', stage:'Interviewing', appliedDate:'2026-08-20', rejectionReason:'', negotiatedCTC:'', offerPackageApprovals:null, offerLetterGenerated:false, offerLetterApproval:null, offerShared:''},
+    {id:uid(), name:'Tomas Bergman', jobId:jobs[0].id, email:'tomas.b@example.com', phone:'', resumeUrl:'', resumeFile:'', resumeFileName:'', source:'Job Board', referredBy:'', notes:'Great sales track record.', experienceType:'Experienced', experienceYears:'8',
+      gender:'Male', dob:'1990-06-23', noticePeriod:'Immediate', currentCTC:'8,00,000', expectedCTC:'9,50,000', currentAddress:'Saket, Delhi', education:{degree:'BBA', institution:'Delhi University', year:'2012'},
+      cvSharedWith:'Karan Bhatt', cvShareStatus:'Shortlisted', shortlisted:true, resumeMatchScore:58, hiredDate:'',
+      activity:[{date:'2026-08-05T09:00:00.000Z', message:'Added as a direct candidate'},{date:'2026-08-06T09:00:00.000Z', message:'Shortlisted directly by recruiter'}],
+      interviews:[{id:uid(), round:'Round 1', hiringManager:'Vikram Nair', date:'2026-08-10', time:'10:00', status:'Completed', decision:'Proceed', feedback:'Strong communicator, good fit.', scorecard:{communication:5,technical:3,culture:4}},{id:uid(), round:'Final Round', hiringManager:'Karan Bhatt', date:'2026-08-20', time:'15:00', status:'Completed', decision:'Selected', feedback:'Excellent close rate in mock pitch.', scorecard:{communication:5,technical:4,culture:5}}], offerStatus:'', stage:'Selected', appliedDate:'2026-08-05', rejectionReason:'', negotiatedCTC:'', offerPackageApprovals:null, offerLetterGenerated:false, offerLetterApproval:null, offerShared:''},
+    {id:uid(), name:'Meera Nambiar', jobId:jobs[1].id, email:'meera.n@example.com', phone:'+91 99887 66554', resumeUrl:'', resumeFile:'', resumeFileName:'', source:'LinkedIn', referredBy:'', notes:'Solid full-stack profile — reviewing against the backend role.', experienceType:'Experienced', experienceYears:'5',
+      gender:'Female', dob:'1994-02-18', noticePeriod:'30 days', currentCTC:'16,00,000', expectedCTC:'21,00,000', currentAddress:'Powai, Mumbai', education:{degree:'B.Tech', institution:'VJTI Mumbai', year:'2015'},
+      cvSharedWith:'', cvShareStatus:'', shortlisted:false, resumeMatchScore:'', hiredDate:'',
+      activity:[{date:'2026-08-15T09:00:00.000Z', message:'Added as a candidate for Backend Engineer'}],
+      interviews:[], offerStatus:'', stage:'Applied', appliedDate:'2026-08-15', rejectionReason:'', negotiatedCTC:'', offerPackageApprovals:null, offerLetterGenerated:false, offerLetterApproval:null, offerShared:''}
+  ];
+  return { employees, candidates, jobs };
+}
+
+async function loadAll(){
+  const [employees, candidates, jobs] = await Promise.all([
+    loadKey(STORAGE_KEYS.employees, null),
+    loadKey(STORAGE_KEYS.candidates, null),
+    loadKey(STORAGE_KEYS.jobs, null)
+  ]);
+
+  if(employees === null){
+    // first run — seed
+    db = seedData();
+    await Promise.all([
+      saveKey(STORAGE_KEYS.employees, db.employees),
+      saveKey(STORAGE_KEYS.candidates, db.candidates),
+      saveKey(STORAGE_KEYS.jobs, db.jobs)
+    ]);
+  } else {
+    db = {
+      employees: employees || [],
+      candidates: candidates || [],
+      jobs: jobs || []
+    };
+  }
+  renderApp();
+}
+
+/* ---------- RENDER SHELL ---------- */
+function renderApp(){
+  const root = document.getElementById('root');
+  root.className = '';
+  root.innerHTML = `
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <aside class="app-sidebar" id="appSidebar">
+      <div style="padding:22px 20px 18px;border-bottom:1px solid var(--line);flex-shrink:0;">
+        <div style="display:flex;align-items:center;gap:8px;font-family:'Source Serif 4',serif;font-size:19px;font-weight:600;color:var(--plum-deep);">
+          <span style="width:8px;height:8px;border-radius:50%;background:var(--mustard);display:inline-block;"></span>U-data HR
+        </div>
+      </div>
+      <nav style="flex:1;padding:16px 12px;">
+        ${NAV_SECTIONS.map(navSectionHtml).join('')}
+      </nav>
+      <div style="padding:14px 20px;border-top:1px solid var(--line);font-size:11px;color:#9CA3AF;line-height:1.6;flex-shrink:0;">
+        Acme Studios &middot; ${db.employees.length} employees<br>
+        <span style="opacity:.7;">Press ⌘K / Ctrl+K to search</span>
+      </div>
+    </aside>
+
+    <main class="app-main" id="appMain">
+      <div class="topsearch">
+        <input id="globalSearch" placeholder="Search candidates, jobs, people… (⌘K)" value="${globalSearchQuery.replace(/"/g,'&quot;')}">
+        <div id="globalSearchResultsWrap">${renderGlobalSearchResults()}</div>
+      </div>
+      <div id="main"></div>
+    </main>
+
+    <div class="modal-bg" id="modalBg"><div class="modal" id="modalBody"></div></div>
+  `;
+
+  // hamburger toggle
+  const hamburger = document.getElementById('hamburgerBtn');
+  const sidebar = document.getElementById('appSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if(hamburger){
+    hamburger.addEventListener('click', ()=>{
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('open');
+    });
+    overlay.addEventListener('click', ()=>{
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  }
+
+  document.querySelectorAll('[data-navsection]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      const id = el.dataset.navsection;
+      if(expandedSections.has(id)) expandedSections.delete(id); else expandedSections.add(id);
+      renderApp();
+    });
+  });
+  document.querySelectorAll('[data-navitem]').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      activeModule = el.dataset.navitem;
+      poolSelection.clear();
+      // close mobile sidebar after nav
+      if(sidebar) sidebar.classList.remove('open');
+      if(overlay) overlay.classList.remove('open');
+      renderApp();
+    });
+  });
+  const gs = document.getElementById('globalSearch');
+  if(gs){
+    gs.oninput = ()=>{ globalSearchQuery = gs.value; renderGlobalSearchOnly(); };
+  }
+  wireGlobalSearchResultClicks();
+  renderMain();
+}
+
+/* One vertical section header (click = expand/collapse) + its vertical sub-item list.
+   The sidebar itself never moves or re-scopes on click — only `activeModule` changes,
+   which re-renders the right-hand content pane. */
+function navSectionHtml(sec){
+  const expanded = expandedSections.has(sec.id);
+  return `
+    <div class="mb-1">
+      <button type="button" data-navsection="${sec.id}" class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-[14px] font-semibold text-gray-800 hover:bg-gray-50 transition-colors">
+        <span class="flex items-center gap-2"><span class="text-[13px]" style="color:var(--plum);">${sec.icon}</span>${sec.label}</span>
+        <span class="text-gray-400 text-[10px] transition-transform duration-150" style="display:inline-block;transform:rotate(${expanded?90:0}deg);">▶</span>
+      </button>
+      <div class="ml-3 pl-3 border-l border-gray-100 space-y-0.5 mb-2" style="${expanded?'':'display:none;'}">
+        ${sec.items.map(it=>`
+          <div data-navitem="${it.id}" class="px-3 py-2 rounded-lg text-[13px] cursor-pointer transition-colors ${activeModule===it.id ? 'text-white font-medium' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'}" style="${activeModule===it.id?'background:var(--plum);':''}">${it.label}</div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* Standard content-pane header used by every module's detail page. */
+function renderModulePage(sectionLabel, title, bodyHtml, actionHtml){
+  return `
+    <div class="row-between">
+      <div>
+        <div class="ccard-meta" style="margin:0 0 2px;">${sectionLabel}</div>
+        <h1 style="font-family:'Source Serif 4',serif;color:var(--plum-deep);margin:0;">${title}</h1>
+      </div>
+      ${actionHtml||''}
+    </div>
+    ${bodyHtml}
+  `;
+}
+
+function navItem(tab, icon, label){
+  return `<div class="nav-item ${currentTab===tab?'active':''}" data-tab="${tab}"><span>${icon}</span>${label}</div>`;
+}
+
+const MODULE_RENDERERS = {
+  'job-requisition': ()=> renderModulePage('Recruitment Module','Job Requisition', renderRequisitionsView(), '<button class="btn" id="addJobBtn">+ Raise job opening</button>'),
+  'candidates': ()=> renderModulePage('Recruitment Module','Candidates', renderCandidatesTable('direct')),
+  'referred-candidates': ()=> renderModulePage('Recruitment Module','Referred Candidates', renderCandidatesTable('referred')),
+  'interview-pipeline': ()=> renderModulePage('Recruitment Module','Interview Pipeline', renderPipelineKanban()),
+  'offers': ()=> renderModulePage('Recruitment Module','Offers', renderOffersView()),
+  'all-employees': ()=> renderModulePage('People Repository','All Employees', renderEmployeesTableOnly(), '<button class="btn" id="addEmployeeBtn">+ Add employee</button>'),
+  'documents': ()=> renderModulePage('People Repository','Documents', renderDocumentsView()),
+  'org-chart': ()=> renderModulePage('People Repository','Org Chart', renderOrgChartView()),
+  'my-requests': ()=> renderModulePage('Hiring Manager','My Requests', renderMyRequestsView()),
+  'approvals': ()=> renderModulePage('Hiring Manager','Approvals', renderApprovalsView()),
+  'reports': ()=> renderModulePage('Hiring Manager','Reports', renderAnalyticsView())
+};
+
+function renderMain(){
+  const main = document.getElementById('main');
+  const active = document.activeElement;
+  const focusId = active && active.id;
+  const selStart = active && 'selectionStart' in active ? active.selectionStart : null;
+
+  const renderer = MODULE_RENDERERS[activeModule] || MODULE_RENDERERS['job-requisition'];
+  main.innerHTML = renderer();
+  attachTabEvents();
+
+  if(focusId){
+    const restored = document.getElementById(focusId);
+    if(restored){
+      restored.focus();
+      if(selStart!==null && 'setSelectionRange' in restored){
+        try{ restored.setSelectionRange(selStart, selStart); }catch(e){}
+      }
+    }
+  }
+}
+
+/* ---------- EMPLOYEES ---------- */
+function renderEmployees(){
+  return `
+    <div class="row-between">
+      <h1 style="font-family:'Source Serif 4',serif;color:var(--plum-deep);margin:0;">People directory</h1>
+      <button class="btn" id="addEmployeeBtn">+ Add employee</button>
+    </div>
+    <div class="card">
+      <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        ${db.employees.map(e=>`
+          <tr><td>${e.name}</td><td>${e.role}</td><td>${e.dept}</td>
+          <td><span class="tag approved">${e.status}</span></td><td>${e.joinDate}</td>
+          <td><button class="btn small secondary" data-editemp="${e.id}">Edit</button> <button class="btn small rose" data-delemp="${e.id}">Remove</button></td></tr>
+        `).join('') || '<tr><td colspan="6" class="empty">No employees yet.</td></tr>'}
+      </tbody></table>
+    </div>
+  `;
+}
+
+function openEmployeeModal(emp){
+  const isEdit = !!emp;
+  emp = emp || {name:'',role:'',dept:'',email:'',salary:'',joinDate:todayStr(),status:'Active'};
+  document.getElementById('modalBody').className = 'modal';
+  document.getElementById('modalBody').innerHTML = `
+    <h3>${isEdit?'Edit employee':'Add employee'}</h3>
+    <div class="field"><label>Full name</label><input id="f_name" value="${emp.name}"></div>
+    <div class="field"><label>Role / Title</label><input id="f_role" value="${emp.role}"></div>
+    <div class="field"><label>Department</label><input id="f_dept" value="${emp.dept}"></div>
+    <div class="field"><label>Email</label><input id="f_email" value="${emp.email}"></div>
+    <div class="field"><label>Annual salary (₹)</label><input id="f_salary" type="number" value="${emp.salary}"></div>
+    <div class="field"><label>Join date</label><input id="f_join" type="date" value="${emp.joinDate}"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Cancel</button>
+      <button class="btn" id="saveEmployee">${isEdit?'Save changes':'Add employee'}</button>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+  document.getElementById('saveEmployee').onclick = async ()=>{
+    const name = document.getElementById('f_name').value.trim();
+    if(!name){ showToast('Name is required'); return; }
+    const data = {
+      id: isEdit?emp.id:uid(),
+      name,
+      role: document.getElementById('f_role').value.trim(),
+      dept: document.getElementById('f_dept').value.trim(),
+      email: document.getElementById('f_email').value.trim(),
+      salary: Number(document.getElementById('f_salary').value)||0,
+      joinDate: document.getElementById('f_join').value,
+      status:'Active'
+    };
+    if(isEdit){
+      db.employees = db.employees.map(e=>e.id===emp.id?data:e);
+    } else {
+      db.employees.push(data);
+    }
+    await saveKey(STORAGE_KEYS.employees, db.employees);
+    closeModal();
+    showToast(isEdit?'Employee updated':'Employee added');
+    renderApp();
+  };
+}
+
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+
+/* ---------- GLOBAL SEARCH ---------- */
+function renderGlobalSearchResults(){
+  const q = globalSearchQuery.trim().toLowerCase();
+  if(!q) return '';
+  const candMatches = db.candidates.filter(c=>c.name.toLowerCase().includes(q)).slice(0,5);
+  const jobMatches = db.jobs.filter(j=>j.title.toLowerCase().includes(q) || (j.jobCode||'').toLowerCase().includes(q)).slice(0,5);
+  const empMatches = db.employees.filter(e=>e.name.toLowerCase().includes(q)).slice(0,5);
+  if(!candMatches.length && !jobMatches.length && !empMatches.length){
+    return `<div class="search-dropdown"><div class="empty">No matches for "${globalSearchQuery}"</div></div>`;
+  }
+  return `<div class="search-dropdown">
+    ${candMatches.length?`<div class="search-group-label">Candidates</div>${candMatches.map(c=>`<div class="search-result" data-searchcand="${c.id}"><span>${c.name}</span><span class="ccard-meta">${c.jobId?jobTitle(c.jobId):'Pool'}</span></div>`).join('')}`:''}
+    ${jobMatches.length?`<div class="search-group-label">Jobs</div>${jobMatches.map(j=>`<div class="search-result" data-searchjob="${j.id}"><span>${j.title}</span><span class="ccard-meta">${j.jobCode||''}</span></div>`).join('')}`:''}
+    ${empMatches.length?`<div class="search-group-label">People</div>${empMatches.map(e=>`<div class="search-result" data-searchemp="${e.id}"><span>${e.name}</span><span class="ccard-meta">${e.role}</span></div>`).join('')}`:''}
+  </div>`;
+}
+function renderGlobalSearchOnly(){
+  const wrap = document.getElementById('globalSearchResultsWrap');
+  if(!wrap) return;
+  wrap.innerHTML = renderGlobalSearchResults();
+  wireGlobalSearchResultClicks();
+}
+function wireGlobalSearchResultClicks(){
+  document.querySelectorAll('[data-searchcand]').forEach(el=> el.onclick = ()=> goToCandidate(el.dataset.searchcand));
+  document.querySelectorAll('[data-searchjob]').forEach(el=> el.onclick = ()=> goToJob(el.dataset.searchjob));
+  document.querySelectorAll('[data-searchemp]').forEach(el=> el.onclick = ()=> goToEmployee(el.dataset.searchemp));
+}
+function goToCandidate(id){
+  const c = db.candidates.find(c=>c.id===id); if(!c) return;
+  expandedSections.add('recruitment');
+  activeModule = c.jobId ? 'interview-pipeline' : (c.source==='Referral'?'referred-candidates':'candidates');
+  globalSearchQuery='';
+  renderApp();
+  setTimeout(()=>openCandidateModal(c, false), 0);
+}
+function goToJob(id){
+  const j = db.jobs.find(j=>j.id===id); if(!j) return;
+  expandedSections.add('recruitment');
+  activeModule='job-requisition';
+  globalSearchQuery='';
+  renderApp();
+  setTimeout(()=>openJobDetailsModal(j), 0);
+}
+function goToEmployee(id){
+  expandedSections.add('people');
+  activeModule='all-employees';
+  globalSearchQuery='';
+  renderApp();
+}
+
+/* ---------- COMMAND PALETTE (⌘K / Ctrl+K) ---------- */
+function commandList(){
+  return [
+    {label:'Go to Job Requisition', action:()=>{activeModule='job-requisition';expandedSections.add('recruitment');renderApp();}},
+    {label:'Go to Candidates', action:()=>{activeModule='candidates';expandedSections.add('recruitment');renderApp();}},
+    {label:'Go to Referred Candidates', action:()=>{activeModule='referred-candidates';expandedSections.add('recruitment');renderApp();}},
+    {label:'Go to Interview Pipeline', action:()=>{activeModule='interview-pipeline';expandedSections.add('recruitment');renderApp();}},
+    {label:'Go to Offers', action:()=>{activeModule='offers';expandedSections.add('recruitment');renderApp();}},
+    {label:'Go to All Employees', action:()=>{activeModule='all-employees';expandedSections.add('people');renderApp();}},
+    {label:'Go to Documents', action:()=>{activeModule='documents';expandedSections.add('people');renderApp();}},
+    {label:'Go to Org Chart', action:()=>{activeModule='org-chart';expandedSections.add('people');renderApp();}},
+    {label:'Go to My Requests', action:()=>{activeModule='my-requests';expandedSections.add('hiringmanager');renderApp();}},
+    {label:'Go to Approvals', action:()=>{activeModule='approvals';expandedSections.add('hiringmanager');renderApp();}},
+    {label:'Go to Reports', action:()=>{activeModule='reports';expandedSections.add('hiringmanager');renderApp();}},
+    {label:'+ Raise job opening', action:()=>{activeModule='job-requisition';expandedSections.add('recruitment');renderApp();setTimeout(()=>openJobModal(null),0);}},
+    {label:'+ Add candidate', action:()=>{activeModule='candidates';expandedSections.add('recruitment');renderApp();setTimeout(()=>openCandidateModal(null,false,true),0);}},
+    {label:'Refer a candidate', action:()=>{activeModule='referred-candidates';expandedSections.add('recruitment');renderApp();setTimeout(()=>openReferralModal(true),0);}},
+    {label:'+ Add employee', action:()=>{activeModule='all-employees';expandedSections.add('people');renderApp();setTimeout(()=>openEmployeeModal(null),0);}}
+  ];
+}
+function openCommandPalette(){
+  cmdPaletteQuery = '';
+  const overlay = document.getElementById('cmdPalette');
+  if(!overlay) return;
+  overlay.classList.add('open');
+  overlay.onclick = (e)=>{ if(e.target===overlay) closeCommandPalette(); };
+  renderCommandPalette();
+  setTimeout(()=>{ const inp = document.getElementById('cmdInput'); if(inp) inp.focus(); }, 0);
+}
+function closeCommandPalette(){
+  const overlay = document.getElementById('cmdPalette');
+  if(overlay) overlay.classList.remove('open');
+}
+function renderCommandPalette(){
+  const overlay = document.getElementById('cmdPalette');
+  if(!overlay) return;
+  const q = cmdPaletteQuery.trim().toLowerCase();
+  const cmds = commandList().filter(c=>c.label.toLowerCase().includes(q));
+  overlay.innerHTML = `
+    <div class="cmd-box">
+      <input id="cmdInput" placeholder="Type a command… (Esc to close)" value="${cmdPaletteQuery.replace(/"/g,'&quot;')}">
+      <div class="cmd-list">
+        ${cmds.length===0?'<div class="empty">No matching commands</div>':cmds.map((c,i)=>`<div class="cmd-item" data-cmdidx="${i}">${c.label}</div>`).join('')}
+      </div>
+    </div>`;
+  const inp = document.getElementById('cmdInput');
+  inp.oninput = ()=>{
+    cmdPaletteQuery = inp.value;
+    renderCommandPalette();
+    const el = document.getElementById('cmdInput');
+    if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); }
+  };
+  inp.onkeydown = (e)=>{
+    if(e.key==='Enter'){ const first = cmds[0]; if(first){ closeCommandPalette(); first.action(); } }
+  };
+  document.querySelectorAll('[data-cmdidx]').forEach(el=>{
+    el.onclick = ()=>{ const c = cmds[Number(el.dataset.cmdidx)]; closeCommandPalette(); if(c) c.action(); };
+  });
+}
+document.addEventListener('keydown', (e)=>{
+  if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){
+    e.preventDefault();
+    openCommandPalette();
+  } else if(e.key==='Escape'){
+    closeCommandPalette();
+  }
+});
+
+/* ---------- RECRUITING ---------- */
+const STAGES = ['Applied','Shortlisted','Interviewing','On Hold','Selected','Offer','Hired'];
+const SOURCES = ['Referral','Job Board','LinkedIn','Career Site','Other'];
+const APPROVAL_STEPS = [
+  {key:'hod', label:'Head of Department (HOD)'},
+  {key:'siteHead', label:'Site Head'},
+  {key:'taHead', label:'TA Head'}
+];
+const ROUND_LABELS = ['Round 1','Round 2','Round 3','Final Round'];
+function emptyApprovalTrack(){
+  return {hod:{status:'Pending',by:'',date:''}, siteHead:{status:'Pending',by:'',date:''}, taHead:{status:'Pending',by:'',date:''}};
+}
+/* Given a candidate's completed interview rounds, work out which round(s) can be scheduled next.
+   Round 1 is mandatory; Round 2 and Round 3 are optional — the recruiter can jump straight
+   from Round 1 (or Round 2/3) to the Final Round. */
+function nextRoundOptions(candidate){
+  const rounds = candidate.interviews || [];
+  const hasCompleted = (label)=> rounds.some(r=>r.round===label && r.status==='Completed' && r.decision==='Proceed');
+  const finalDone = rounds.some(r=>r.round==='Final Round');
+  if(finalDone) return [];
+  if(!hasCompleted('Round 1')) return ['Round 1'];
+  if(!hasCompleted('Round 2') && !hasCompleted('Round 3')) return ['Round 2','Final Round'];
+  if(hasCompleted('Round 2') && !hasCompleted('Round 3')) return ['Round 3','Final Round'];
+  return ['Final Round'];
+}
+
+let tempResumeData = '', tempResumeName = '', tempResumeMatchScore = null;
+let referralResumeData = '', referralResumeName = '', referralResumeMatchScore = null;
+
+function jobById(id){ return db.jobs.find(j=>j.id===id); }
+function jobTitle(id){ const j = jobById(id); return j ? j.title : '(job removed)'; }
+function applicantCount(jobId){ return db.candidates.filter(c=>c.jobId===jobId).length; }
+
+function jobStage(job){
+  if(job.cancelled) return 'Cancelled';
+  if(job.closed) return 'Closed';
+  if(APPROVAL_STEPS.some(s=>job.approvals[s.key].status==='Rejected')) return 'Rejected';
+  if(APPROVAL_STEPS.every(s=>job.approvals[s.key].status==='Approved')) return 'Live';
+  return 'Pending Approval';
+}
+function isJobLive(job){ return jobStage(job)==='Live'; }
+function jobStageTagClass(stage){
+  if(stage==='Live') return 'approved';
+  if(stage==='Rejected') return 'rejected';
+  if(stage==='Closed') return 'closed';
+  if(stage==='Cancelled') return 'cancelled';
+  return 'pending';
+}
+function recruitingMetrics(){
+  const active = db.jobs.filter(j=>!j.cancelled);
+  const offersAccepted = db.candidates.filter(c=>c.offerStatus==='Accepted').length;
+  const offersDeclined = db.candidates.filter(c=>c.offerStatus==='Declined').length;
+  const noShows = db.candidates.reduce((sum,c)=> sum + (c.interviews||[]).filter(r=>r.status==='No-show').length, 0);
+  const interviewsScheduled = db.candidates.reduce((sum,c)=> sum + (c.interviews||[]).filter(r=>r.status==='Scheduled').length, 0);
+  return {
+    totalOpenings: active.reduce((sum,j)=> sum + (Number(j.openings)||0), 0),
+    totalRequisitions: db.jobs.length,
+    pendingApproval: db.jobs.filter(j=>jobStage(j)==='Pending Approval').length,
+    cancelled: db.jobs.filter(j=>j.cancelled).length,
+    rejected: db.jobs.filter(j=>jobStage(j)==='Rejected').length,
+    offersAccepted, offersDeclined, noShows, interviewsScheduled
+  };
+}
+
+function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const r = new FileReader();
+    r.onload = ()=>resolve(r.result);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+/* Activity timeline — call with the live db.candidates record (not a stale copy) */
+function logActivity(candidate, message){
+  if(!candidate) return;
+  if(!candidate.activity) candidate.activity = [];
+  candidate.activity.push({date:new Date().toISOString(), message});
+}
+function renderActivityTimeline(candidate){
+  const activity = candidate.activity || [];
+  if(activity.length===0) return '';
+  const rows = [...activity].reverse().map(a=>{
+    const d = new Date(a.date);
+    const stamp = isNaN(d) ? '' : d.toLocaleString([], {day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
+    return `<div class="approval-meta" style="padding:4px 0;border-bottom:1px solid var(--line);">${stamp?`<b>${stamp}</b> — `:''}${a.message}</div>`;
+  }).join('');
+  return `<div class="field"><label>Activity timeline</label><div style="max-height:160px;overflow-y:auto;">${rows}</div></div>`;
+}
+
+/* Lightweight keyword-overlap resume ↔ JD match score (not a real ATS parser, just a triage signal) */
+const RESUME_MATCH_STOPWORDS = new Set(['the','and','for','with','that','this','from','have','will','are','you','your','our','their','into','role','team','work','years','year','experience','ability','strong','including','across','within','while','they','them','more','than','also','able','using','based','good','high','well','must','plus','least','over','under','both','each']);
+function extractKeywords(text){
+  return new Set((String(text||'').toLowerCase().match(/[a-z]{4,}/g)||[]).filter(w=>!RESUME_MATCH_STOPWORDS.has(w)));
+}
+function computeResumeMatch(resumeText, job){
+  if(!job) return null;
+  const jdText = [job.jd, job.qualification, job.eligibility, job.title, job.designation].filter(Boolean).join(' ');
+  const jdWords = extractKeywords(jdText);
+  if(jdWords.size===0) return null;
+  const resumeWords = extractKeywords(resumeText);
+  let hit = 0;
+  jdWords.forEach(w=>{ if(resumeWords.has(w)) hit++; });
+  return Math.round((hit/jdWords.size)*100);
+}
+
+/* .ics calendar file for a scheduled interview round */
+function downloadICS(candidate, roundId){
+  const r = (candidate.interviews||[]).find(r=>r.id===roundId);
+  if(!r || !r.date) { showToast('This round has no date set'); return; }
+  const dateDigits = r.date.replace(/-/g,'');
+  const startTime = r.time ? r.time.replace(':','')+'00' : '100000';
+  let endTime = '110000';
+  if(r.time){
+    const [h,m] = r.time.split(':').map(Number);
+    endTime = String((h+1)%24).padStart(2,'0') + String(m).padStart(2,'0') + '00';
+  }
+  const ics = [
+    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//U-data HR//EN','BEGIN:VEVENT',
+    `UID:${uid()}@udata-hr`,
+    `DTSTAMP:${dateDigits}T${startTime}`,
+    `DTSTART:${dateDigits}T${startTime}`,
+    `DTEND:${dateDigits}T${endTime}`,
+    `SUMMARY:${r.round} — ${candidate.name} (${jobTitle(candidate.jobId)})`,
+    `DESCRIPTION:Interview with ${r.hiringManager} for ${jobTitle(candidate.jobId)}.`,
+    'END:VEVENT','END:VCALENDAR'
+  ].join('\r\n');
+  const blob = new Blob([ics], {type:'text/calendar'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `interview-${candidate.name.replace(/\s+/g,'-')}-${r.round.replace(/\s+/g,'-')}.ics`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Calendar invite downloaded');
+}
+
+function candidateStageBadgeExtras(c, stage){
+  let out = '';
+  if(c.experienceType) out += `<div class="ccard-meta">${c.experienceType==='Fresher'?'Fresher':(c.experienceYears?c.experienceYears+' yrs experience':'Experienced')}</div>`;
+  if(c.referredBy) out += `<div class="ccard-meta">Referred by ${c.referredBy}</div>`;
+  if(c.resumeMatchScore!=='' && c.resumeMatchScore!=null) out += `<div class="ccard-meta">JD match: ${c.resumeMatchScore}%</div>`;
+  if(c.cvShareStatus) out += `<div class="ccard-meta">CV: ${c.cvShareStatus}${c.cvSharedWith?' ('+c.cvSharedWith+')':''}</div>`;
+  if(c.interviews && c.interviews.length) out += `<div class="ccard-meta">${c.interviews[c.interviews.length-1].round} with ${c.interviews[c.interviews.length-1].hiringManager}: ${c.interviews[c.interviews.length-1].status}</div>`;
+  if(c.negotiatedCTC) out += `<div class="ccard-meta">Negotiated CTC: ₹${c.negotiatedCTC}</div>`;
+  if(c.offerStatus) out += `<div class="ccard-meta">Offer: ${c.offerStatus}</div>`;
+  if(stage==='Rejected' && c.rejectionReason) out += `<div class="ccard-meta">Reason: ${c.rejectionReason}</div>`;
+  return out;
+}
+
+function renderRecruiting(){
+  const m = recruitingMetrics();
+  const subtabLabels = {requisitions:'Job requisitions', referred:'Referred candidates', direct:'Candidates', pipeline:'Interview pipeline'};
+  return `
+    <div class="row-between">
+      <div>
+        <div class="ccard-meta" style="margin:0 0 2px;">Recruitment</div>
+        <h1 style="font-family:'Source Serif 4',serif;color:var(--plum-deep);margin:0;">${subtabLabels[recruitSubTab]}</h1>
+      </div>
+      ${recruitSubTab==='requisitions'?'<button class="btn" id="addJobBtn">+ Raise job opening</button>':''}
+    </div>
+
+    <div class="card">
+      <h3>Requisition metrics</h3>
+      <div class="metric-row">
+        <div class="stat"><div class="num">${m.totalOpenings}</div><div class="label">Total job openings</div></div>
+        <div class="stat"><div class="num">${m.totalRequisitions}</div><div class="label">Total requisitions</div></div>
+        <div class="stat"><div class="num">${m.pendingApproval}</div><div class="label">Pending approval</div></div>
+        <div class="stat"><div class="num">${m.cancelled}</div><div class="label">Cancelled jobs</div></div>
+        <div class="stat"><div class="num">${m.rejected}</div><div class="label">Rejected jobs</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Candidate & interview metrics</h3>
+      <div class="metric-row">
+        <div class="stat"><div class="num">${m.interviewsScheduled}</div><div class="label">Interviews scheduled</div></div>
+        <div class="stat"><div class="num">${m.noShows}</div><div class="label">No-shows</div></div>
+        <div class="stat"><div class="num">${m.offersAccepted}</div><div class="label">Offers accepted</div></div>
+        <div class="stat"><div class="num">${m.offersDeclined}</div><div class="label">Offers declined</div></div>
+      </div>
+    </div>
+
+    ${recruitSubTab==='requisitions' ? renderRequisitionsView() :
+      recruitSubTab==='referred' ? renderPoolView('referred') :
+      recruitSubTab==='direct' ? renderPoolView('direct') :
+      renderPipelineBoard()}
+  `;
+}
+
+function renderRequisitionsView(){
+  return `
+    <div class="analytics-bar" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+      ${[
+        {l:'Total MRFs', v:db.jobs.length, col:'var(--plum)'},
+        {l:'Live / Open', v:db.jobs.filter(j=>isJobLive(j)&&!j.closed).length, col:'var(--sage)'},
+        {l:'Pending approval', v:db.jobs.filter(j=>jobStage(j)==='Pending Approval').length, col:'var(--amber,#D97706)'},
+        {l:'Closed', v:db.jobs.filter(j=>j.closed).length, col:'var(--ink-soft)'},
+        {l:'Cancelled', v:db.jobs.filter(j=>j.cancelled).length, col:'var(--rose)'},
+        {l:'Total positions', v:db.jobs.reduce((a,j)=>a+Number(j.openings||0),0), col:'var(--plum-deep)'}
+      ].map(s=>`<div class="stat-chip" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 18px;min-width:110px;">
+        <div style="font-size:22px;font-weight:700;color:${s.col};font-family:'Source Serif 4',serif;">${s.v}</div>
+        <div style="font-size:11px;color:var(--ink-soft);">${s.l}</div>
+      </div>`).join('')}
+    </div>
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);">
+        <h3 style="margin:0;">Job requisitions</h3>
+      </div>
+      ${db.jobs.length===0 ? '<div class="empty" style="padding:28px;">No job requisitions yet — raise one to start hiring.</div>' :
+        `<div class="table-scroll"><table style="width:100%;"><thead><tr><th style="position:sticky;top:0;background:#fff;z-index:2;">Job code</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Role</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Grade</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Requisition type</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Department</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Location</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Openings</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Applicants</th><th style="position:sticky;top:0;background:#fff;z-index:2;">Status</th><th style="position:sticky;top:0;background:#fff;z-index:2;"></th></tr></thead><tbody>
+          ${db.jobs.map(j=>{
+            const stage = jobStage(j);
+            const recruiter = j.assignedRecruiterId ? db.employees.find(e=>e.id===j.assignedRecruiterId) : null;
+            return `<tr>
+              <td>${j.jobCode||'—'}</td>
+              <td>${j.title}<div class="ccard-meta">${j.designation||''}</div></td>
+              <td>${j.grade?`<span class="tag source-tag">${j.grade}</span>`:'—'}</td>
+              <td>${j.reqType||'New Requirement'}${j.reqType==='Replacement' && j.replacementOf?`<div class="ccard-meta">Replacement of ${j.replacementOf}</div>`:''}</td>
+              <td>${j.dept}${j.subDept?' / '+j.subDept:''}</td>
+              <td>${j.location}</td>
+              <td>${j.openings}</td>
+              <td>${applicantCount(j.id)}</td>
+              <td><span class="tag ${jobStageTagClass(stage)}">${stage}</span>
+                ${stage==='Live'?`<div class="ccard-meta">Recruiter: ${recruiter?recruiter.name:'Not yet assigned'}</div>`:''}
+              </td>
+              <td>
+                <button class="btn small secondary" data-detailsjob="${j.id}">Details</button>
+                <button class="btn small secondary" data-editjob="${j.id}">Edit</button>
+                <button class="btn small secondary" data-approvejob="${j.id}">Approvals</button>
+                ${stage==='Live'?`<button class="btn small ${j.closed?'sage':'rose'}" data-togglejob="${j.id}">${j.closed?'Reopen':'Close'}</button>`:''}
+                ${(stage==='Pending Approval'||stage==='Cancelled')?`<button class="btn small ${j.cancelled?'sage':'rose'}" data-canceljob="${j.id}">${j.cancelled?'Uncancel':'Cancel'}</button>`:''}
+                <button class="btn small rose" data-deljob="${j.id}">Delete</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody></table></div>`}
+    </div>
+  `;
+}
+
+/* Unified interview pipeline — referred and recruiter-sourced candidates merge here once
+   they're linked to a job (i.e. shortlisted for interviews), regardless of origin. */
+function renderPipelineBoard(){
+  const liveJobs = db.jobs.filter(isJobLive);
+  let list = db.candidates.filter(c=>{
+    if(!c.jobId) return false;
+    if(c.stage==='Applied' && !c.shortlisted) return false; // still sits in a holding pool tab until shared/shortlisted
+    if(!recruitFilters.showRejected && c.stage==='Rejected') return false;
+    if(recruitFilters.jobId!=='all' && c.jobId!==recruitFilters.jobId) return false;
+    if(recruitFilters.source!=='all' && c.source!==recruitFilters.source) return false;
+    if(recruitFilters.search && !c.name.toLowerCase().includes(recruitFilters.search.toLowerCase())) return false;
+    return true;
+  });
+  const columns = recruitFilters.showRejected ? [...STAGES,'Rejected'] : STAGES;
+
+  return `
+    <div class="row-between">
+      <h3 style="margin:0;">Interview pipeline</h3>
+    </div>
+    <div class="ccard-meta" style="margin:-4px 0 12px;">Referred and recruiter-sourced candidates land here together once they're shared with a hiring manager or shortlisted for interviews. Drag a card between columns to move its stage.</div>
+    <div class="filter-bar">
+      <input type="text" id="rf_search" placeholder="Search candidates…" value="${recruitFilters.search}">
+      <select id="rf_job"><option value="all">All jobs</option>${db.jobs.map(j=>`<option value="${j.id}" ${recruitFilters.jobId===j.id?'selected':''}>${j.jobCode?j.jobCode+' — ':''}${j.title}</option>`).join('')}</select>
+      <select id="rf_source"><option value="all">All sources</option>${SOURCES.map(s=>`<option value="${s}" ${recruitFilters.source===s?'selected':''}>${s}</option>`).join('')}</select>
+      <label class="check"><input type="checkbox" id="rf_rejected" ${recruitFilters.showRejected?'checked':''}> Show rejected</label>
+    </div>
+
+    <div class="pipeline-cols" style="grid-template-columns:repeat(${columns.length},minmax(150px,1fr));">
+      ${columns.map(stage=>`
+        <div class="pcol" data-dropcol="${stage}">
+          <h4>${stage} (${list.filter(c=>c.stage===stage).length})</h4>
+          ${list.filter(c=>c.stage===stage).map(c=>`
+            <div class="ccard" data-viewcand="${c.id}" draggable="true" data-dragcand="${c.id}">
+              <div class="cname">${c.name}</div>
+              <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag source-tag">${c.source||'—'}</span></div>
+              ${candidateStageBadgeExtras(c, stage)}
+              <div class="ccard-actions">
+                ${stage==='Interviewing'?`<button class="btn small secondary" data-movecand="${c.id}" data-dir="-1">← Back to Applied</button>`:''}
+                ${stage==='Applied'?`<button class="btn small sage" data-movecand="${c.id}" data-dir="1">Advance to Interviewing →</button>`:''}
+                ${stage==='On Hold'?`<button class="btn small sage" data-holdselect="${c.id}">Mark Selected</button>`:''}
+                ${stage!=='Rejected'?`<button class="btn small rose" data-rejectcand="${c.id}">Reject</button>`:''}
+                <button class="btn small rose" data-delcand="${c.id}">Remove</button>
+              </div>
+            </div>
+          `).join('') || '<div class="empty" style="padding:8px 0;">Empty</div>'}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+async function moveCandidateToStage(id, targetStage){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c || c.stage===targetStage) return;
+  if(targetStage==='Rejected'){
+    const reason = prompt('Rejection reason (optional):', '') || '';
+    c.rejectionReason = reason || c.rejectionReason || 'Rejected via pipeline board';
+  }
+  const from = c.stage;
+  c.stage = targetStage;
+  logActivity(c, `Moved from ${from} to ${targetStage} (drag & drop)`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast(`${c.name} moved to ${targetStage}`);
+  renderMain();
+}
+
+function wireDragDropEvents(){
+  document.querySelectorAll('[data-dragcand]').forEach(el=>{
+    el.addEventListener('dragstart', (e)=>{
+      e.dataTransfer.setData('text/plain', el.dataset.dragcand);
+      el.classList.add('dragging');
+    });
+    el.addEventListener('dragend', ()=> el.classList.remove('dragging'));
+  });
+  document.querySelectorAll('[data-dropcol]').forEach(col=>{
+    col.addEventListener('dragover', (e)=>{ e.preventDefault(); col.classList.add('drop-hover'); });
+    col.addEventListener('dragleave', ()=> col.classList.remove('drop-hover'));
+    col.addEventListener('drop', (e)=>{
+      e.preventDefault();
+      col.classList.remove('drop-hover');
+      const id = e.dataTransfer.getData('text/plain');
+      moveCandidateToGroup(id, col.dataset.dropcol);
+    });
+  });
+}
+
+/* ---------- NEW MODULE VIEWS (vertical sidebar → right-pane content) ---------- */
+
+function candidateStatusBadge(stage){
+  const cls = stage==='Hired' ? 'approved' :
+              stage==='Rejected' ? 'rejected' :
+              (stage==='Selected'||stage==='Offer') ? 'approved' :
+              'pending';
+  return `<span class="tag ${cls}">${stage}</span>`;
+}
+
+/* Recruitment Module > Candidates / Referred Candidates — full table, every stage, with
+   search, job filter, status filter and status badges. Row click opens the full profile. */
+function renderCandidatesTable(kind){
+  const isReferred = kind==='referred';
+  let list = db.candidates.filter(c => c.jobId && !c.shortlisted && c.stage==='Applied' && (isReferred ? c.source==='Referral' : c.source!=='Referral'));
+  if(recruitFilters.search) list = list.filter(c=>c.name.toLowerCase().includes(recruitFilters.search.toLowerCase()));
+  if(recruitFilters.jobId!=='all') list = list.filter(c=>c.jobId===recruitFilters.jobId);
+  if(recruitFilters.status && recruitFilters.status!=='all') list = list.filter(c=>c.stage===recruitFilters.status);
+  const selectedCount = [...poolSelection].filter(id=>list.some(c=>c.id===id)).length;
+  const statusOptions = [...STAGES,'Rejected'];
+
+  return `
+    <div class="ccard-meta" style="margin:-4px 0 12px;">${isReferred?'Employee referrals sit here until shared with a hiring manager or shortlisted.':'Recruiter-sourced candidates sit here until shared with a hiring manager or shortlisted.'} Once shortlisted, they move into the Interview Pipeline. Click a row to open the full profile.</div>
+    <div class="filter-bar">
+      <input type="text" id="rf_search" placeholder="Search candidates…" value="${recruitFilters.search}">
+      <select id="rf_job"><option value="all">All jobs</option>${db.jobs.map(j=>`<option value="${j.id}" ${recruitFilters.jobId===j.id?'selected':''}>${j.jobCode?j.jobCode+' — ':''}${j.title}</option>`).join('')}</select>
+      <select id="rf_status"><option value="all">All statuses</option>${statusOptions.map(s=>`<option value="${s}" ${recruitFilters.status===s?'selected':''}>${s}</option>`).join('')}</select>
+      <button class="btn secondary small" id="${isReferred?'referBtn':'addPoolCandidateBtn'}">${isReferred?'Refer a candidate':'+ Add candidate'}</button>
+    </div>
+    ${selectedCount>0 ? `
+      <div class="bulk-bar">
+        <span class="ccard-meta" style="margin:0;">${selectedCount} selected</span>
+        <button class="btn small sage" id="bulkShortlistBtn">Shortlist selected</button>
+        <button class="btn small rose" id="bulkRejectBtn">Reject selected</button>
+        <button class="btn small rose" id="bulkDeleteBtn">Delete selected</button>
+        <button class="btn small secondary" id="bulkClearBtn">Clear selection</button>
+      </div>` : ''}
+    <div class="card" style="padding:0;overflow-x:auto;">
+      ${list.length===0 ? '<div class="empty" style="padding:24px;">No candidates match these filters.</div>' : `
+      <table>
+        <thead><tr>
+          <th style="width:30px;"></th>
+          <th>Candidate</th><th>Job</th><th>Source</th><th>Experience</th><th>Applied</th><th>Status</th><th></th>
+        </tr></thead>
+        <tbody>
+          ${list.map(c=>`
+            <tr data-viewcand="${c.id}" style="cursor:pointer;">
+              <td onclick="event.stopPropagation()"><input type="checkbox" data-poolcheck="${c.id}" ${poolSelection.has(c.id)?'checked':''}></td>
+              <td><div style="font-weight:600;">${c.name}</div><div class="ccard-meta">${c.email||''}</div></td>
+              <td>${jobTitle(c.jobId)}</td>
+              <td><span class="tag source-tag">${c.source||'—'}</span></td>
+              <td>${c.experienceType==='Fresher'?'Fresher':(c.experienceYears?c.experienceYears+' yrs':'—')}</td>
+              <td>${c.appliedDate||'—'}</td>
+              <td>${candidateStatusBadge(c.stage)}</td>
+              <td onclick="event.stopPropagation()"><button class="btn small rose" data-delcand="${c.id}">Remove</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`}
+    </div>
+  `;
+}
+
+/* Recruitment Module > Interview Pipeline — Kanban, exactly 5 columns. The underlying data
+   model still tracks fine-grained stages (used everywhere else in the app), so columns
+   here are groups of stages; each card shows its precise stage as a label.
+   "Hired" is intentionally not a column here — it's still set internally on the candidate
+   record once an offer is accepted (see offerAcceptBtn), purely so Dashboard/Reports keep
+   working, but it has no visible column/subsection anywhere in the UI. */
+const KANBAN_GROUPS = [
+  {id:'shortlisted', label:'Shortlisted', stages:['Applied','Shortlisted']},
+  {id:'interviewing', label:'Interviewing', stages:['Interviewing']},
+  {id:'selected', label:'Selected', stages:['Selected']},
+  {id:'onhold', label:'On Hold', stages:['On Hold']},
+  {id:'rejected', label:'Rejected', stages:['Rejected']}
+];
+const KANBAN_GROUP_DEFAULT_STAGE = {shortlisted:'Shortlisted', interviewing:'Interviewing', selected:'Selected', onhold:'On Hold', rejected:'Rejected'};
+function groupForStage(stage){ return KANBAN_GROUPS.find(g=>g.stages.includes(stage)); }
+
+function renderPipelineKanban(){
+  const liveJobs = db.jobs.filter(isJobLive);
+  let list = db.candidates.filter(c=>{
+    if(!c.jobId) return false;
+    if((c.stage==='Applied') && !c.shortlisted) return false; // still sits in Candidates/Referred until shared or shortlisted
+    if(recruitFilters.jobId!=='all' && c.jobId!==recruitFilters.jobId) return false;
+    if(recruitFilters.source!=='all' && c.source!==recruitFilters.source) return false;
+    if(recruitFilters.search && !c.name.toLowerCase().includes(recruitFilters.search.toLowerCase())) return false;
+    return true;
+  });
+
+  return `
+    <div class="analytics-bar" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+      ${(()=>{
+        const total=db.candidates.filter(c=>c.jobId).length;
+        const sl=db.candidates.filter(c=>c.jobId&&(c.stage==='Shortlisted'||c.shortlisted)).length;
+        const iv=db.candidates.filter(c=>c.jobId&&c.stage==='Interviewing').length;
+        const sel=db.candidates.filter(c=>c.jobId&&c.stage==='Selected').length;
+        const oh=db.candidates.filter(c=>c.jobId&&c.stage==='On Hold').length;
+        const rj=db.candidates.filter(c=>c.jobId&&c.stage==='Rejected').length;
+        return [
+          {l:'Total in pipeline', v:total, col:'var(--plum)'},
+          {l:'Shortlisted', v:sl, col:'var(--sage)'},
+          {l:'Interviewing', v:iv, col:'var(--mustard)'},
+          {l:'Selected', v:sel, col:'var(--sage)'},
+          {l:'On Hold', v:oh, col:'var(--mustard)'},
+          {l:'Rejected', v:rj, col:'var(--rose)'}
+        ].map(s=>`<div class="stat-chip" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 18px;min-width:100px;">
+          <div style="font-size:22px;font-weight:700;color:${s.col};font-family:'Source Serif 4',serif;">${s.v}</div>
+          <div style="font-size:11px;color:var(--ink-soft);">${s.l}</div>
+        </div>`).join('');
+      })()}
+    </div>
+    <div class="row-between">
+      <div class="ccard-meta" style="margin:0;">Drag a card to move it, or use the buttons on the card.</div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="rf_search" placeholder="Search candidates…" value="${recruitFilters.search}">
+      <select id="rf_job"><option value="all">All jobs</option>${db.jobs.map(j=>`<option value="${j.id}" ${recruitFilters.jobId===j.id?'selected':''}>${j.jobCode?j.jobCode+' — ':''}${j.title}</option>`).join('')}</select>
+      <select id="rf_source"><option value="all">All sources</option>${SOURCES.map(s=>`<option value="${s}" ${recruitFilters.source===s?'selected':''}>${s}</option>`).join('')}</select>
+    </div>
+    <div class="pipeline-cols" style="grid-template-columns:repeat(5,minmax(200px,1fr));">
+      ${KANBAN_GROUPS.map(g=>{
+        const inGroup = list.filter(c=>g.stages.includes(c.stage));
+        return `
+        <div class="pcol" data-dropcol="${g.id}">
+          <h4>${g.label} (${inGroup.length})</h4>
+          ${inGroup.map(c=>`
+            <div class="ccard" data-viewcand="${c.id}" draggable="true" data-dragcand="${c.id}">
+              <div class="cname">${c.name}</div>
+              <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag source-tag">${c.source||'—'}</span></div>
+              <div class="ccard-meta">Stage: ${c.stage}</div>
+              ${candidateStageBadgeExtras(c, c.stage)}
+              <div class="ccard-actions">
+                ${(c.stage==='Shortlisted'||c.stage==='Applied')?`<button class="btn small sage" data-schedinterview="${c.id}">Line up for Interview →</button>`:''}
+                ${c.stage==='On Hold'?`<button class="btn small sage" data-holdselect="${c.id}">Mark Selected</button>`:''}
+                ${c.stage!=='Rejected'?`<button class="btn small rose" data-rejectcand="${c.id}">Reject</button>`:''}
+                <button class="btn small rose" data-delcand="${c.id}">Remove</button>
+              </div>
+            </div>
+          `).join('') || '<div class="empty" style="padding:8px 0;">Empty</div>'}
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+async function moveCandidateToGroup(id, groupId){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c) return;
+  const currentGroup = groupForStage(c.stage);
+  if(currentGroup && currentGroup.id===groupId) return; // dropped back in its own column
+  const targetStage = KANBAN_GROUP_DEFAULT_STAGE[groupId];
+  if(!targetStage) return;
+  const from = c.stage;
+  c.stage = targetStage;
+  logActivity(c, `Moved from ${from} to ${targetStage} (drag & drop)`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast(`${c.name} moved to ${targetStage}`);
+  renderMain();
+}
+
+/* Recruitment Module > Offers — Kanban board:
+   Generate Offer → Release Offer → Accepted / Rejected / No Show.
+   Negotiated CTC and the HOD/Site Head/TA Head approval steps still happen, but internally —
+   as sub-steps inside the "Generate Offer" card (see renderOfferFlowSection) — rather than as
+   their own separate columns. */
+const OFFER_COLS = [
+  {id:'generate', label:'Generate Offer',    match: c=> (c.stage==='Selected'||c.stage==='Offer') && !c.offerShared},
+  {id:'release',  label:'Release Offer',     match: c=> !!c.offerShared && !c.offerStatus},
+  {id:'accepted', label:'Accepted',          match: c=> c.offerStatus==='Accepted'},
+  {id:'rejected', label:'Rejected',          match: c=> c.offerStatus==='Declined'},
+  {id:'noshow',   label:'No Show',           match: c=> c.offerStatus==='No Show'}
+];
+function allPkgApproved(c){ return c.offerPackageApprovals && ['hod','siteHead','taHead'].every(k=>c.offerPackageApprovals[k].status==='Approved'); }
+
+function renderOffersView(){
+  const all = db.candidates.filter(c=> c.jobId && (
+    c.stage==='Selected' || c.stage==='Offer' ||
+    c.offerStatus==='Accepted' || c.offerStatus==='Declined' || c.offerStatus==='No Show'
+  ));
+  // Stats
+  const statsHtml = `
+    <div class="analytics-bar" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+      ${[
+        {l:'In pipeline', v: all.filter(c=>!c.offerStatus&&(c.stage==='Selected'||c.stage==='Offer')).length, col:'var(--plum)'},
+        {l:'Offer accepted', v: all.filter(c=>c.offerStatus==='Accepted').length, col:'var(--sage)'},
+        {l:'Offer rejected', v: all.filter(c=>c.offerStatus==='Declined').length, col:'var(--rose)'},
+        {l:'No show', v: all.filter(c=>c.offerStatus==='No Show').length, col:'var(--amber,#D97706)'}
+      ].map(s=>`<div class="stat-chip" style="background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 18px;min-width:120px;">
+        <div style="font-size:22px;font-weight:700;color:${s.col};font-family:'Source Serif 4',serif;">${s.v}</div>
+        <div style="font-size:11px;color:var(--ink-soft);">${s.l}</div>
+      </div>`).join('')}
+    </div>`;
+
+  if(all.length===0) return statsHtml + '<div class="empty" style="padding:24px 0;">No candidates in the offer stage yet.</div>';
+
+  const colsHtml = OFFER_COLS.map(col=>{
+    const cards = all.filter(col.match);
+    return `<div class="pcol">
+      <h4>${col.label} (${cards.length})</h4>
+      ${cards.map(c=>`
+        <div class="ccard" data-viewcand="${c.id}">
+          <div class="cname">${c.name}</div>
+          <div class="ccard-meta">${jobTitle(c.jobId)}</div>
+          ${c.negotiatedCTC?`<div class="ccard-meta">₹${c.negotiatedCTC}</div>`:''}
+          <div class="ccard-actions">
+            ${col.id==='generate'?`<button class="btn small sage" data-openoffer="${c.id}">Manage offer</button>`:''}
+            ${col.id==='release'?`<button class="btn small sage" data-releaseoffer="${c.id}">Release offer</button>`:''}
+            ${col.id==='release'?`<button class="btn small rose" data-offernoshowrel="${c.id}">No show</button>`:''}
+          </div>
+        </div>`).join('') || '<div class="empty" style="padding:8px 0;">Empty</div>'}
+    </div>`;
+  }).join('');
+
+  return statsHtml + `<div class="pipeline-wrap"><div class="pipeline-cols" style="grid-template-columns:repeat(${OFFER_COLS.length},minmax(160px,1fr));">${colsHtml}</div></div>`;
+}
+
+/* People Repository > All Employees */
+function renderEmployeesTableOnly(){
+  return `
+    <div class="card">
+      <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+      <tbody>
+        ${db.employees.map(e=>`
+          <tr><td>${e.name}</td><td>${e.role}</td><td>${e.dept}</td>
+          <td><span class="tag approved">${e.status}</span></td><td>${e.joinDate}</td>
+          <td><button class="btn small secondary" data-editemp="${e.id}">Edit</button> <button class="btn small rose" data-delemp="${e.id}">Remove</button></td></tr>
+        `).join('') || '<tr><td colspan="6" class="empty">No employees yet.</td></tr>'}
+      </tbody></table>
+    </div>
+  `;
+}
+
+/* People Repository > Documents — resumes collected from candidate applications/referrals */
+function renderDocumentsView(){
+  const docs = db.candidates.filter(c=>c.resumeFile && c.resumeFileName);
+  return `
+    <div class="ccard-meta" style="margin:-4px 0 12px;">Resumes collected from candidate applications and referrals — the current document repository.</div>
+    <div class="card" style="padding:0;overflow-x:auto;">
+      ${docs.length===0 ? '<div class="empty" style="padding:24px;">No documents uploaded yet.</div>' : `
+      <table>
+        <thead><tr><th>File</th><th>Candidate</th><th>Job</th><th>Source</th><th></th></tr></thead>
+        <tbody>
+          ${docs.map(c=>`
+            <tr>
+              <td>${c.resumeFileName}</td>
+              <td>${c.name}</td>
+              <td>${c.jobId?jobTitle(c.jobId):'Pool'}</td>
+              <td><span class="tag source-tag">${c.source||'—'}</span></td>
+              <td><a class="btn small secondary" href="${c.resumeFile}" download="${c.resumeFileName}">Download</a></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`}
+    </div>
+  `;
+}
+
+/* People Repository > Org Chart — grouped by department (no reporting-line data yet) */
+function renderOrgChartView(){
+  const byDept = {};
+  db.employees.forEach(e=>{
+    const d = e.dept || 'Unassigned';
+    if(!byDept[d]) byDept[d] = [];
+    byDept[d].push(e);
+  });
+  const depts = Object.keys(byDept).sort();
+  return `
+    <div class="ccard-meta" style="margin:-4px 0 12px;">Grouped by department — reporting lines aren't tracked yet, so this is a department-level view of the team.</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;">
+      ${depts.length===0 ? '<div class="empty">No employees yet.</div>' : depts.map(d=>`
+        <div class="card" style="margin:0;">
+          <h3>${d} (${byDept[d].length})</h3>
+          ${byDept[d].map(e=>`
+            <div class="ccard" style="cursor:default;">
+              <div class="cname">${e.name}</div>
+              <div class="ccard-meta">${e.role}</div>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+/* Hiring Manager > My Requests — requisitions this manager raised, plus any candidate CVs
+   shared with them that are awaiting a shortlist/reject decision. */
+function renderMyRequestsView(){
+  const managers = db.employees;
+  const selectedId = myRequestsManagerId || (managers[0]?.id || '');
+  const manager = managers.find(e=>e.id===selectedId);
+  const managerName = manager ? manager.name : '';
+  const myJobs = db.jobs.filter(j=>j.raisedBy===managerName);
+  const shared = db.candidates.filter(c=>c.cvSharedWith===managerName);
+  const pendingReview = shared.filter(c=>c.cvShareStatus==='Shared');
+
+  return `
+    <div class="card">
+      <h3>Viewing as</h3>
+      ${managers.length===0?'<div class="empty">Add employees to the people directory first.</div>':
+        `<select id="mr_manager">${managers.map(e=>`<option value="${e.id}" ${e.id===selectedId?'selected':''}>${e.name} — ${e.role}</option>`).join('')}</select>`}
+    </div>
+    <div class="card">
+      <h3>Awaiting your decision (${pendingReview.length})</h3>
+      ${pendingReview.length===0 ? '<div class="empty">Nothing waiting on you right now.</div>' :
+        pendingReview.map(c=>`
+          <div class="ccard">
+            <div class="cname">${c.name}</div>
+            <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag source-tag">${c.source||'—'}</span></div>
+            <div class="ccard-meta">CV: ${c.resumeFile?`<a href="${c.resumeFile}" download="${c.resumeFileName||'resume'}">Download</a>`:(c.resumeUrl?`<a href="${c.resumeUrl}" target="_blank" rel="noopener">View link</a>`:'Not provided')}</div>
+            <div class="ccard-actions">
+              <button class="btn small sage" data-hmshortlist="${c.id}">Shortlist</button>
+              <button class="btn small rose" data-hmreject="${c.id}">Reject</button>
+            </div>
+          </div>
+        `).join('')}
+    </div>
+    <div class="card">
+      <h3>${managerName?managerName+"'s requisitions":'Requisitions raised'} (${myJobs.length})</h3>
+      ${myJobs.length===0 ? '<div class="empty">No requisitions raised by this person yet.</div>' :
+        `<table><thead><tr><th>Job code</th><th>Role</th><th>Status</th><th>Openings</th><th>Applicants</th><th></th></tr></thead><tbody>
+          ${myJobs.map(j=>{
+            const stage = jobStage(j);
+            return `<tr>
+              <td>${j.jobCode||'—'}</td>
+              <td>${j.title}</td>
+              <td><span class="tag ${jobStageTagClass(stage)}">${stage}</span></td>
+              <td>${j.openings}</td>
+              <td>${applicantCount(j.id)}</td>
+              <td><button class="btn small secondary" data-detailsjob="${j.id}">Details</button></td>
+            </tr>`;
+          }).join('')}
+        </tbody></table>`}
+    </div>
+  `;
+}
+
+/* Hiring Manager > Approvals */
+function renderApprovalsView(){
+  const pending = db.jobs.filter(j=>jobStage(j)==='Pending Approval');
+  const decided = db.jobs.filter(j=>['Live','Rejected'].includes(jobStage(j)));
+  return `
+    <div class="card">
+      <h3>Awaiting approval (${pending.length})</h3>
+      ${pending.length===0 ? '<div class="empty">Nothing pending right now.</div>' : pending.map(j=>`
+        <div class="ccard">
+          <div class="cname">${j.title} <span class="ccard-meta">${j.jobCode||''}</span></div>
+          <div class="ccard-meta">${j.dept} · ${j.location} · Raised by ${j.raisedBy||'—'}</div>
+          <div class="ccard-actions"><button class="btn small sage" data-approvejob="${j.id}">Review & approve</button></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <h3>Decided (${decided.length})</h3>
+      ${decided.length===0 ? '<div class="empty">No decisions yet.</div>' : decided.map(j=>{
+        const stage = jobStage(j);
+        return `<div class="ccard">
+          <div class="cname">${j.title}</div>
+          <div class="ccard-meta">${j.jobCode||''} · <span class="tag ${jobStageTagClass(stage)}">${stage}</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+  `;
+}
+
+/* Holding pool — candidates already linked to a job but not yet shared/shortlisted for
+   interviews. Split by origin (referred vs recruiter-sourced) so each has its own intake
+   section. Once shared with a hiring manager or shortlisted, they move into the unified
+   interview pipeline above — open a candidate's profile to do that. */
+function renderPoolView(kind){
+  const isReferred = kind==='referred';
+  let pool = db.candidates.filter(c=> c.jobId && c.stage==='Applied' && !c.shortlisted && (isReferred ? c.source==='Referral' : c.source!=='Referral'));
+  if(recruitFilters.search) pool = pool.filter(c=>c.name.toLowerCase().includes(recruitFilters.search.toLowerCase()));
+  const selectedCount = [...poolSelection].filter(id=>pool.some(c=>c.id===id)).length;
+  return `
+    <div class="row-between">
+      <h3 style="margin:0;">${isReferred?'Referred candidates':'Candidates'}</h3>
+      <div>
+        ${isReferred
+          ? `<button class="btn secondary" id="referPoolBtn">Refer a candidate</button>`
+          : `<button class="btn" id="addPoolCandidateBtn">+ Add candidate</button>`}
+      </div>
+    </div>
+    <div class="ccard-meta" style="margin:-4px 0 12px;">${isReferred?'Employee referrals sit here until shared with a hiring manager or shortlisted — then they move into the interview pipeline.':'Recruiter-sourced candidates sit here until shared with a hiring manager or shortlisted — then they move into the interview pipeline.'} Open a card to share their CV or shortlist them.</div>
+    <div class="filter-bar">
+      <input type="text" id="rf_search" placeholder="Search candidates…" value="${recruitFilters.search}">
+    </div>
+    ${selectedCount>0 ? `
+      <div class="bulk-bar">
+        <span class="ccard-meta" style="margin:0;">${selectedCount} selected</span>
+        <button class="btn small sage" id="bulkShortlistBtn">Shortlist selected</button>
+        <button class="btn small rose" id="bulkRejectBtn">Reject selected</button>
+        <button class="btn small rose" id="bulkDeleteBtn">Delete selected</button>
+        <button class="btn small secondary" id="bulkClearBtn">Clear selection</button>
+      </div>` : ''}
+    <div class="card">
+      ${pool.length===0 ? `<div class="empty">No ${isReferred?'referred candidates':'candidates'} here yet.</div>` :
+        pool.map(c=>`
+          <div class="ccard" data-viewcand="${c.id}" style="cursor:pointer;">
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <input type="checkbox" data-poolcheck="${c.id}" ${poolSelection.has(c.id)?'checked':''} style="margin-top:3px;" onclick="event.stopPropagation()">
+              <div style="flex:1;">
+                <div class="cname">${c.name}</div>
+                <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag source-tag">${c.source||'—'}</span></div>
+                <div class="ccard-meta">${c.experienceType==='Fresher'?'Fresher':(c.experienceYears?c.experienceYears+' yrs experience':'Experienced')}</div>
+                ${c.referredBy?`<div class="ccard-meta">Referred by ${c.referredBy}</div>`:''}
+                ${c.resumeMatchScore!=='' && c.resumeMatchScore!=null?`<div class="ccard-meta">JD match: ${c.resumeMatchScore}%</div>`:''}
+                ${c.cvShareStatus?`<div class="ccard-meta">CV: ${c.cvShareStatus}${c.cvSharedWith?' ('+c.cvSharedWith+')':''}</div>`:''}
+                ${c.notes?`<div class="ccard-meta">${c.notes}</div>`:''}
+              </div>
+            </div>
+            <div class="ccard-actions">
+              <button class="btn small rose" data-delcand="${c.id}">Remove</button>
+            </div>
+          </div>
+        `).join('')}
+    </div>
+  `;
+}
+
+async function bulkShortlistSelected(){
+  const ids = [...poolSelection];
+  if(ids.length===0) return;
+  ids.forEach(id=>{
+    const c = db.candidates.find(c=>c.id===id);
+    if(!c) return;
+    c.shortlisted = true;
+    c.stage = 'Shortlisted';
+    if(!c.cvShareStatus) c.cvShareStatus = 'Shortlisted';
+    logActivity(c, 'Shortlisted directly by recruiter (bulk action)');
+  });
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  poolSelection.clear();
+  showToast(`${ids.length} candidate(s) shortlisted`);
+  renderApp();
+}
+async function bulkRejectPool(){
+  const ids = [...poolSelection];
+  if(ids.length===0) return;
+  if(!confirm(`Reject ${ids.length} selected candidate(s)?`)) return;
+  ids.forEach(id=>{
+    const c = db.candidates.find(c=>c.id===id);
+    if(!c) return;
+    c.stage = 'Rejected'; c.rejectionReason = c.rejectionReason || 'Rejected in bulk action';
+    logActivity(c, 'Rejected in bulk action');
+  });
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  poolSelection.clear();
+  showToast(`${ids.length} candidate(s) rejected`);
+  renderApp();
+}
+async function bulkDeletePool(){
+  const ids = [...poolSelection];
+  if(ids.length===0) return;
+  if(!confirm(`Permanently delete ${ids.length} selected candidate(s)?`)) return;
+  db.candidates = db.candidates.filter(c=>!ids.includes(c.id));
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  poolSelection.clear();
+  showToast(`${ids.length} candidate(s) deleted`);
+  renderApp();
+}
+
+/* ---------- ANALYTICS ---------- */
+function renderAnalyticsView(){
+  const funnelStages = ['Applied','Interviewing','Selected','Offer','Hired'];
+  const counts = funnelStages.map(s=> db.candidates.filter(c=>c.stage===s).length);
+  const maxCount = Math.max(1, ...counts);
+
+  const bySource = {};
+  db.candidates.forEach(c=>{
+    const s = c.source || 'Other';
+    if(!bySource[s]) bySource[s] = {total:0, hired:0};
+    bySource[s].total++;
+    if(c.stage==='Hired') bySource[s].hired++;
+  });
+
+  const recruiterLoad = db.employees.map(e=>{
+    const jobs = db.jobs.filter(j=>j.assignedRecruiterId===e.id && isJobLive(j));
+    const candCount = db.candidates.filter(c=> jobs.some(j=>j.id===c.jobId)).length;
+    return {name:e.name, jobs:jobs.length, candidates:candCount};
+  }).filter(r=>r.jobs>0);
+
+  const filledPairs = db.jobs
+    .map(j=> ({job:j, hired: db.candidates.find(c=>c.jobId===j.id && c.stage==='Hired' && c.hiredDate)}))
+    .filter(p=>p.hired);
+  let avgDays = null;
+  if(filledPairs.length){
+    const total = filledPairs.reduce((sum,p)=> sum + Math.max(0, Math.round((new Date(p.hired.hiredDate) - new Date(p.job.postedDate))/86400000)), 0);
+    avgDays = Math.round(total/filledPairs.length);
+  }
+
+  return `
+    <div class="card">
+      <h3>Hiring funnel</h3>
+      ${funnelStages.map((s,i)=>`
+        <div class="funnel-row">
+          <div class="ccard-meta" style="margin-bottom:3px;">${s} — ${counts[i]}</div>
+          <div class="funnel-track"><div class="funnel-fill" style="width:${(counts[i]/maxCount*100)}%;"></div></div>
+        </div>
+      `).join('')}
+    </div>
+    <div class="card">
+      <h3>Source effectiveness</h3>
+      ${Object.keys(bySource).length===0 ? '<div class="empty">No candidate data yet.</div>' :
+        `<table><thead><tr><th>Source</th><th>Total candidates</th><th>Hired</th><th>Conversion</th></tr></thead><tbody>
+          ${Object.entries(bySource).map(([s,v])=>`<tr><td>${s}</td><td>${v.total}</td><td>${v.hired}</td><td>${v.total?Math.round(v.hired/v.total*100):0}%</td></tr>`).join('')}
+        </tbody></table>`}
+    </div>
+    <div class="card">
+      <h3>Recruiter load</h3>
+      ${recruiterLoad.length===0 ? '<div class="empty">No recruiters assigned to live jobs yet.</div>' :
+        `<table><thead><tr><th>Recruiter</th><th>Live jobs</th><th>Candidates in pipeline</th></tr></thead><tbody>
+          ${recruiterLoad.map(r=>`<tr><td>${r.name}</td><td>${r.jobs}</td><td>${r.candidates}</td></tr>`).join('')}
+        </tbody></table>`}
+    </div>
+    <div class="card">
+      <h3>Time to fill</h3>
+      <div class="stat"><div class="num">${avgDays!==null?avgDays+' days':'—'}</div><div class="label">Average days from posting to hire (${filledPairs.length} filled role${filledPairs.length===1?'':'s'})</div></div>
+    </div>
+  `;
+}
+
+/* ---------- HIRING MANAGER VIEW ---------- */
+function renderHMView(){
+  const managers = db.employees;
+  const selectedId = hmViewManagerId || (managers[0]?.id || '');
+  const manager = managers.find(e=>e.id===selectedId);
+  const managerName = manager ? manager.name : '';
+  const shared = db.candidates.filter(c=>c.cvSharedWith===managerName);
+  const pending = shared.filter(c=>c.cvShareStatus==='Shared');
+  const decided = shared.filter(c=>c.cvShareStatus && c.cvShareStatus!=='Shared');
+  return `
+    <div class="row-between">
+      <h1 style="font-family:'Source Serif 4',serif;color:var(--plum-deep);margin:0;">Hiring manager view</h1>
+    </div>
+    <div class="card">
+      <h3>Viewing as</h3>
+      ${managers.length===0 ? '<div class="empty">Add employees to the people directory first.</div>' :
+        `<select id="hm_manager">${managers.map(e=>`<option value="${e.id}" ${e.id===selectedId?'selected':''}>${e.name} — ${e.role}</option>`).join('')}</select>`}
+    </div>
+    <div class="card">
+      <h3>Awaiting your decision (${pending.length})</h3>
+      ${pending.length===0 ? '<div class="empty">Nothing waiting on you right now.</div>' :
+        pending.map(c=>`
+          <div class="ccard">
+            <div class="cname">${c.name}</div>
+            <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag source-tag">${c.source||'—'}</span></div>
+            <div class="ccard-meta">${c.experienceType==='Fresher'?'Fresher':(c.experienceYears?c.experienceYears+' yrs experience':'Experienced')}</div>
+            ${c.resumeMatchScore!=='' && c.resumeMatchScore!=null?`<div class="ccard-meta">JD match: ${c.resumeMatchScore}%</div>`:''}
+            ${c.resumeFile?`<div class="file-row"><a href="${c.resumeFile}" download="${c.resumeFileName||'resume'}">Download resume</a></div>`:''}
+            <div class="ccard-actions">
+              <button class="btn small sage" data-hmshortlist="${c.id}">Shortlist</button>
+              <button class="btn small rose" data-hmreject="${c.id}">Reject</button>
+              <button class="btn small secondary" data-viewcand="${c.id}">View profile</button>
+            </div>
+          </div>
+        `).join('')}
+    </div>
+    <div class="card">
+      <h3>Previously reviewed (${decided.length})</h3>
+      ${decided.length===0 ? '<div class="empty">No history yet.</div>' :
+        decided.map(c=>`
+          <div class="ccard" data-viewcand="${c.id}">
+            <div class="cname">${c.name}</div>
+            <div class="ccard-meta">${jobTitle(c.jobId)} · <span class="tag ${c.cvShareStatus==='Shortlisted'?'approved':'rejected'}">${c.cvShareStatus}</span></div>
+          </div>
+        `).join('')}
+    </div>
+  `;
+}
+
+async function hmShortlist(id){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c) return;
+  c.cvShareStatus = 'Shortlisted';
+  c.shortlisted = true;
+  c.stage = 'Shortlisted';
+  logActivity(c, `Shortlisted by hiring manager (${c.cvSharedWith})`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Shortlisted by hiring manager');
+  renderApp();
+}
+async function hmReject(id){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c) return;
+  c.cvShareStatus = 'Rejected'; c.stage = 'Rejected';
+  c.rejectionReason = `CV rejected by hiring manager (${c.cvSharedWith})`;
+  logActivity(c, `Rejected by hiring manager (${c.cvSharedWith})`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Candidate rejected by hiring manager');
+  renderApp();
+}
+
+/* Job requisition — create/edit core details */
+function openJobModal(job){
+  const isEdit = !!job;
+  job = job || {jobCode:'',title:'',designation:'',grade:'',dept:'',subDept:'',location:'',openings:1,reqType:'New Requirement',replacementOf:'',
+    ctc:'',jd:'',eligibility:'',qualification:'',roleExpType:'Fresher',roleExpYears:'',
+    raisedBy:'',deptHead:'',
+    approvals:emptyApprovalTrack(),
+    assignedRecruiterId:'', closed:false, cancelled:false, postedDate:todayStr()};
+  const reqType = job.reqType || 'New Requirement';
+  const roleExpType = job.roleExpType || 'Fresher';
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${isEdit?'Edit requisition':'Raise a job opening'}</h3>
+    <div class="field"><label>Job code</label><input id="j_jobcode" value="${job.jobCode||''}" placeholder="e.g. REQ-2026-017"></div>
+    <div class="field"><label>Designation / Role title *</label><input id="j_designation" value="${job.designation||''}" placeholder="e.g. Senior Product Designer"></div>
+    <div class="field"><label>Grade / Level</label><input id="j_grade" value="${job.grade||''}" placeholder="e.g. M2, L4, IC3"></div>
+    <div class="field"><label>Requisition type</label>
+      <select id="j_reqtype">
+        <option value="New Requirement" ${reqType==='New Requirement'?'selected':''}>New Requirement</option>
+        <option value="Replacement" ${reqType==='Replacement'?'selected':''}>Replacement</option>
+      </select>
+    </div>
+    <div class="field replacement-field ${reqType==='Replacement'?'show':''}" id="j_replacement_wrap">
+      <label>Replacement of (search employee)</label>
+      <input id="j_replacementof" list="j_employee_list" value="${job.replacementOf||''}" placeholder="Start typing an employee name…">
+      <datalist id="j_employee_list">
+        ${db.employees.map(e=>`<option value="${e.name}">`).join('')}
+      </datalist>
+    </div>
+    <div class="field"><label>Department</label><input id="j_dept" value="${job.dept}"></div>
+    <div class="field"><label>Sub-department (if any)</label><input id="j_subdept" value="${job.subDept||''}"></div>
+    <div class="field"><label>Location</label><input id="j_location" value="${job.location}"></div>
+    <div class="field"><label>Openings</label><input id="j_openings" type="number" min="1" value="${job.openings}"></div>
+    <div class="field"><label>Budgeted CTC for the role (₹)</label><input id="j_ctc" value="${job.ctc||''}" placeholder="e.g. 12,00,000"></div>
+    <div class="field"><label>Job description (JD)</label><textarea id="j_jd" rows="3">${job.jd||''}</textarea></div>
+    <div class="field"><label>Eligibility</label><textarea id="j_eligibility" rows="2">${job.eligibility||''}</textarea></div>
+    <div class="field"><label>Qualification</label><textarea id="j_qualification" rows="2">${job.qualification||''}</textarea></div>
+    <div class="field"><label>Experience required for this role</label>
+      <select id="j_roleexptype">
+        <option value="Fresher" ${roleExpType!=='Experienced'?'selected':''}>Fresher</option>
+        <option value="Experienced" ${roleExpType==='Experienced'?'selected':''}>Experienced</option>
+      </select>
+    </div>
+    <div class="field" id="j_roleexpyearswrap" style="${roleExpType==='Experienced'?'':'display:none'}">
+      <label>Years of experience required</label><input id="j_roleexpyears" type="number" min="0" step="0.5" value="${job.roleExpYears||''}">
+    </div>
+    <div class="field"><label>Requisition raised by (manager)</label><input id="j_raisedby" value="${job.raisedBy||''}"></div>
+    <div class="field"><label>Department head</label><input id="j_depthead" value="${job.deptHead||''}"></div>
+    ${!isEdit?'<div class="badge-locked">New requisitions start as "Pending Approval" and only go live once HOD, Site Head and TA Head have all approved.</div>':''}
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Cancel</button>
+      <button class="btn" id="saveJob">${isEdit?'Save changes':'Submit for approval'}</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+  document.getElementById('j_reqtype').onchange = (e)=>{
+    document.getElementById('j_replacement_wrap').classList.toggle('show', e.target.value==='Replacement');
+  };
+  document.getElementById('j_roleexptype').onchange = (e)=>{
+    document.getElementById('j_roleexpyearswrap').style.display = e.target.value==='Experienced' ? '' : 'none';
+  };
+  document.getElementById('saveJob').onclick = async ()=>{
+    const jobCode = document.getElementById('j_jobcode').value.trim();
+    if(!jobCode){ showToast('Job code is required'); return; }
+    const title = document.getElementById('j_designation').value.trim();
+    if(!title){ showToast('Designation / Role title is required'); return; }
+    const reqTypeVal = document.getElementById('j_reqtype').value;
+    const replacementOfVal = reqTypeVal==='Replacement' ? document.getElementById('j_replacementof').value.trim() : '';
+    if(reqTypeVal==='Replacement' && !replacementOfVal){ showToast('Search and select the employee being replaced'); return; }
+    const deptVal = document.getElementById('j_dept').value.trim();
+    if(!deptVal){ showToast('Department is required'); return; }
+    const locationVal = document.getElementById('j_location').value.trim();
+    if(!locationVal){ showToast('Location is required'); return; }
+    const ctcVal = document.getElementById('j_ctc').value.trim();
+    if(!ctcVal){ showToast('Budgeted CTC is required'); return; }
+    const jdVal = document.getElementById('j_jd').value.trim();
+    if(!jdVal){ showToast('Job description is required'); return; }
+    const eligVal = document.getElementById('j_eligibility').value.trim();
+    if(!eligVal){ showToast('Eligibility is required'); return; }
+    const qualVal = document.getElementById('j_qualification').value.trim();
+    if(!qualVal){ showToast('Qualification is required'); return; }
+    const raisedByVal = document.getElementById('j_raisedby').value.trim();
+    if(!raisedByVal){ showToast('Requisition raised by is required'); return; }
+    const deptHeadVal = document.getElementById('j_depthead').value.trim();
+    if(!deptHeadVal){ showToast('Department head is required'); return; }
+    const roleExpTypeVal = document.getElementById('j_roleexptype').value;
+    const data = {
+      id: isEdit?job.id:uid(),
+      jobCode,
+      title,
+      designation: document.getElementById('j_designation').value.trim(),
+      grade: document.getElementById('j_grade').value.trim(),
+      reqType: reqTypeVal,
+      replacementOf: replacementOfVal,
+      dept: document.getElementById('j_dept').value.trim(),
+      subDept: document.getElementById('j_subdept').value.trim(),
+      location: document.getElementById('j_location').value.trim(),
+      openings: Number(document.getElementById('j_openings').value)||1,
+      ctc: document.getElementById('j_ctc').value.trim(),
+      jd: document.getElementById('j_jd').value.trim(),
+      eligibility: document.getElementById('j_eligibility').value.trim(),
+      qualification: document.getElementById('j_qualification').value.trim(),
+      roleExpType: roleExpTypeVal,
+      roleExpYears: roleExpTypeVal==='Experienced' ? (document.getElementById('j_roleexpyears').value||'') : '',
+      raisedBy: document.getElementById('j_raisedby').value.trim(),
+      deptHead: document.getElementById('j_depthead').value.trim(),
+      approvals: job.approvals,
+      assignedRecruiterId: job.assignedRecruiterId||'',
+      closed: job.closed||false,
+      cancelled: job.cancelled||false,
+      postedDate: job.postedDate
+    };
+    if(isEdit) db.jobs = db.jobs.map(j=>j.id===job.id?data:j);
+    else db.jobs.push(data);
+    await saveKey(STORAGE_KEYS.jobs, db.jobs);
+    closeModal();
+    showToast(isEdit?'Requisition updated':'Requisition submitted for approval');
+    renderApp();
+  };
+}
+
+/* Read-only requisition details (CTC, JD, eligibility, qualification, experience required) */
+function openJobDetailsModal(job){
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${job.title} — requisition details</h3>
+    <div class="field"><label>Job code</label><div>${job.jobCode||'—'}</div></div>
+    <div class="field"><label>Designation</label><div>${job.designation||'—'}</div></div>
+    <div class="field"><label>Grade / Level</label><div>${job.grade||'—'}</div></div>
+    <div class="field"><label>Location</label><div>${job.location||'—'}</div></div>
+    <div class="field"><label>Budgeted CTC</label><div>${job.ctc?'₹'+job.ctc:'—'}</div></div>
+    <div class="field"><label>Experience required</label><div>${job.roleExpType==='Experienced' ? (job.roleExpYears?job.roleExpYears+' yrs':'Experienced') : 'Fresher'}</div></div>
+    <div class="field"><label>Job description (JD)</label><div>${job.jd||'—'}</div></div>
+    <div class="field"><label>Eligibility</label><div>${job.eligibility||'—'}</div></div>
+    <div class="field"><label>Qualification</label><div>${job.qualification||'—'}</div></div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Close</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+}
+
+/* Approval workflow + recruiter assignment */
+function openApprovalModal(job){
+  const stage = jobStage(job);
+  const recruiter = job.assignedRecruiterId ? db.employees.find(e=>e.id===job.assignedRecruiterId) : null;
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${job.title} — approvals</h3>
+    <div class="field"><label>Your name (approver)</label><input id="ap_name" placeholder="Enter your name before approving/rejecting"></div>
+    <div class="approval-track">
+      ${APPROVAL_STEPS.map((step, idx)=>{
+        const a = job.approvals[step.key];
+        const prevApproved = idx===0 || job.approvals[APPROVAL_STEPS[idx-1].key].status==='Approved';
+        const canAct = a.status==='Pending' && prevApproved;
+        const isTaHeadStep = step.key==='taHead';
+        return `
+        <div class="approval-step">
+          <div class="approval-step-head">
+            <b>${step.label}</b>
+            <span class="tag ${a.status==='Approved'?'approved':a.status==='Rejected'?'rejected':'pending'}">${a.status}</span>
+          </div>
+          ${a.status!=='Pending' ? `<div class="approval-meta">${a.status} by ${a.by} on ${a.date}</div>${isTaHeadStep && a.status==='Approved' ? `<div class="approval-meta">Assigned recruiter: ${recruiter?recruiter.name:'—'}</div>` : ''}` :
+            canAct ? `
+              ${isTaHeadStep ? `
+                <div class="field" style="margin-bottom:8px;">
+                  <label>Assign to recruiter (required to approve)</label>
+                  <select id="ap_recruiter">
+                    <option value="">Select a recruiter…</option>
+                    ${db.employees.map(e=>`<option value="${e.id}" ${job.assignedRecruiterId===e.id?'selected':''}>${e.name} — ${e.role}</option>`).join('')}
+                  </select>
+                </div>` : ''}
+              <div class="approval-actions">
+                <button class="btn small sage" data-approvestep="${step.key}" data-jobid="${job.id}">Approve${isTaHeadStep?' & assign':''}</button>
+                <button class="btn small rose" data-rejectstep="${step.key}" data-jobid="${job.id}">Reject</button>
+              </div>` :
+              `<div class="approval-meta badge-locked">Waiting on ${APPROVAL_STEPS[idx-1].label}</div>`
+          }
+        </div>`;
+      }).join('')}
+    </div>
+    ${stage==='Rejected'||stage==='Live'?`<button class="btn secondary small" id="resetApprovals" data-jobid="${job.id}">Reset approvals</button>`:''}
+
+    ${stage==='Live'?`
+      <h3 style="margin-top:18px;">Reassign recruiter</h3>
+      <div class="field">
+        <label>Recruiter (TA Head action)</label>
+        <select id="ap_reassign">
+          <option value="">Unassigned</option>
+          ${db.employees.map(e=>`<option value="${e.id}" ${job.assignedRecruiterId===e.id?'selected':''}>${e.name} — ${e.role}</option>`).join('')}
+        </select>
+      </div>
+      <div class="modal-actions"><button class="btn" id="saveReassign" data-jobid="${job.id}">Save recruiter</button></div>
+    `:''}
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Close</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+
+  document.querySelectorAll('[data-approvestep]').forEach(el=>{
+    el.onclick = ()=>recordApproval(el.dataset.jobid, el.dataset.approvestep, 'Approved');
+  });
+  document.querySelectorAll('[data-rejectstep]').forEach(el=>{
+    el.onclick = ()=>recordApproval(el.dataset.jobid, el.dataset.rejectstep, 'Rejected');
+  });
+  const resetBtn = document.getElementById('resetApprovals');
+  if(resetBtn) resetBtn.onclick = ()=>resetJobApprovals(resetBtn.dataset.jobid);
+  const saveReassign = document.getElementById('saveReassign');
+  if(saveReassign) saveReassign.onclick = async ()=>{
+    const recruiterId = document.getElementById('ap_reassign').value;
+    db.jobs = db.jobs.map(j=>j.id===saveReassign.dataset.jobid?{...j, assignedRecruiterId:recruiterId}:j);
+    await saveKey(STORAGE_KEYS.jobs, db.jobs);
+    closeModal();
+    showToast('Recruiter updated');
+    renderApp();
+  };
+}
+
+async function recordApproval(jobId, stepKey, decision){
+  const name = document.getElementById('ap_name').value.trim();
+  if(!name){ showToast('Enter the approver name first'); return; }
+  const job = db.jobs.find(j=>j.id===jobId);
+  if(!job) return;
+  if(stepKey==='taHead' && decision==='Approved'){
+    const recruiterId = document.getElementById('ap_recruiter')?.value || '';
+    if(!recruiterId){ showToast('Select a recruiter to assign before approving'); return; }
+    job.assignedRecruiterId = recruiterId;
+  }
+  job.approvals[stepKey] = { status:decision, by:name, date:todayStr() };
+  await saveKey(STORAGE_KEYS.jobs, db.jobs);
+  showToast(`${stepKey==='hod'?'HOD':stepKey==='siteHead'?'Site Head':'TA Head'} ${decision.toLowerCase()}${stepKey==='taHead'&&decision==='Approved'?' — recruiter assigned':''}`);
+  closeModal();
+  renderApp();
+}
+
+async function resetJobApprovals(jobId){
+  const job = db.jobs.find(j=>j.id===jobId);
+  if(!job) return;
+  job.approvals = emptyApprovalTrack();
+  job.closed = false;
+  job.assignedRecruiterId = '';
+  await saveKey(STORAGE_KEYS.jobs, db.jobs);
+  showToast('Approvals reset');
+  closeModal();
+  renderApp();
+}
+
+async function toggleJobStatus(id){
+  db.jobs = db.jobs.map(j=>j.id===id?{...j, closed: !j.closed}:j);
+  await saveKey(STORAGE_KEYS.jobs, db.jobs);
+  renderApp();
+}
+
+async function toggleJobCancelled(id){
+  const job = db.jobs.find(j=>j.id===id);
+  const willCancel = job && !job.cancelled;
+  db.jobs = db.jobs.map(j=>j.id===id?{...j, cancelled: !j.cancelled}:j);
+  await saveKey(STORAGE_KEYS.jobs, db.jobs);
+  showToast(willCancel?'Requisition cancelled':'Requisition reinstated');
+  renderApp();
+}
+
+async function deleteJob(id){
+  db.jobs = db.jobs.filter(j=>j.id!==id);
+  await saveKey(STORAGE_KEYS.jobs, db.jobs);
+  showToast('Job deleted');
+  renderApp();
+}
+
+/* ---------- RESUME AUTO-EXTRACTION ---------- */
+const scriptLoadCache = {};
+function loadScriptOnce(src){
+  if(scriptLoadCache[src]) return scriptLoadCache[src];
+  scriptLoadCache[src] = new Promise((resolve, reject)=>{
+    if(document.querySelector(`script[src="${src}"]`)){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = reject;
+    document.head.appendChild(s);
+  });
+  return scriptLoadCache[src];
+}
+
+async function extractResumeText(file){
+  const name = file.name.toLowerCase();
+  if(name.endsWith('.pdf')){
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const buf = await file.arrayBuffer();
+    const doc = await window.pdfjsLib.getDocument({data: buf}).promise;
+    let text = '';
+    for(let i=1; i<=doc.numPages; i++){
+      const page = await doc.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it=>it.str).join(' ') + '\n';
+    }
+    return text;
+  }
+  if(name.endsWith('.docx')){
+    await loadScriptOnce('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    const buf = await file.arrayBuffer();
+    const result = await window.mammoth.extractRawText({arrayBuffer: buf});
+    return result.value;
+  }
+  return null; // unsupported format (e.g. legacy .doc) — caller should prompt for manual entry
+}
+
+function parseResumeFields(text){
+  const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+  const phoneMatch = text.match(/(\+?\d[\d\-\s()]{8,}\d)/);
+  let experienceYears = '', fresher = false;
+  const expMatch = text.match(/(\d+(?:\.\d+)?)\s*\+?\s*years?\s+(?:of\s+)?(?:relevant\s+|work\s+)?experience/i);
+  if(expMatch) experienceYears = expMatch[1];
+  else if(/\bfresher\b/i.test(text) || /\b0\s*years?\s*(of\s*)?experience\b/i.test(text)) fresher = true;
+  let name = '';
+  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
+  for(const line of lines.slice(0,6)){
+    if(line.length>1 && line.length<60 && !/[@\d]/.test(line) && /^[A-Za-z\s.'-]+$/.test(line)){
+      name = line; break;
+    }
+  }
+  return { name, email: emailMatch?emailMatch[0]:'', phone: phoneMatch?phoneMatch[0].trim():'', experienceYears, fresher };
+}
+
+async function autofillFromResume(file, fieldIds){
+  try{
+    const text = await extractResumeText(file);
+    if(!text){ showToast('Auto-extract not supported for this file type — please fill details manually'); return; }
+    const parsed = parseResumeFields(text);
+    const nameEl = document.getElementById(fieldIds.name);
+    const emailEl = document.getElementById(fieldIds.email);
+    const phoneEl = document.getElementById(fieldIds.phone);
+    if(nameEl && !nameEl.value.trim() && parsed.name) nameEl.value = parsed.name;
+    if(emailEl && !emailEl.value.trim() && parsed.email) emailEl.value = parsed.email;
+    if(phoneEl && !phoneEl.value.trim() && parsed.phone) phoneEl.value = parsed.phone;
+    if(fieldIds.expType){
+      const expTypeEl = document.getElementById(fieldIds.expType);
+      const expYearsEl = document.getElementById(fieldIds.expYears);
+      if(parsed.fresher && expTypeEl){ expTypeEl.value = 'Fresher'; expTypeEl.dispatchEvent(new Event('change')); }
+      else if(parsed.experienceYears && expTypeEl && expYearsEl){
+        expTypeEl.value = 'Experienced'; expTypeEl.dispatchEvent(new Event('change'));
+        expYearsEl.value = parsed.experienceYears;
+      }
+    }
+    if(fieldIds.jobSelect){
+      const jobEl = document.getElementById(fieldIds.jobSelect);
+      const job = jobEl && jobEl.value ? db.jobs.find(j=>j.id===jobEl.value) : null;
+      const score = job ? computeResumeMatch(text, job) : null;
+      if(fieldIds.matchStore==='c') tempResumeMatchScore = score;
+      else if(fieldIds.matchStore==='r') referralResumeMatchScore = score;
+      const matchRow = fieldIds.matchRow ? document.getElementById(fieldIds.matchRow) : null;
+      if(matchRow) matchRow.textContent = score!=null ? `Resume match: ${score}% keyword overlap with the job description` : '';
+    }
+    showToast('Auto-filled from resume — please verify the details');
+  }catch(err){
+    showToast('Could not auto-extract from this resume — please fill details manually');
+  }
+}
+
+/* Post-selection offer flow: negotiated CTC -> HOD/Site Head/TA Head package approval ->
+   offer letter -> TA Head approval of the letter -> share with candidate. */
+function renderOfferFlowSection(candidate){
+  if(candidate.stage!=='Selected' && candidate.stage!=='Offer') return '';
+  const pkgApprovals = candidate.offerPackageApprovals;
+  const pkgAllApproved = pkgApprovals && APPROVAL_STEPS.every(s=>pkgApprovals[s.key].status==='Approved');
+  const pkgRejected = pkgApprovals && APPROVAL_STEPS.some(s=>pkgApprovals[s.key].status==='Rejected');
+  let html = '<div class="field"><label>Offer package</label>';
+
+  if(!candidate.negotiatedCTC){
+    html += `
+      <input id="of_ctc" placeholder="Final negotiated CTC (₹)" style="margin-bottom:8px;">
+      <button type="button" class="btn small sage" id="submitCtcBtn">Submit for approval</button>
+    `;
+  } else {
+    html += `<div class="ccard-meta">Negotiated CTC: ₹${candidate.negotiatedCTC}</div>`;
+    if(pkgRejected){
+      html += `<div class="ccard-meta">Package rejected — revise the CTC and resubmit.</div>
+        <button type="button" class="btn small secondary" id="reviseCtcBtn" style="margin-top:6px;">Revise CTC</button>`;
+    } else if(!pkgAllApproved){
+      html += `<div class="field" style="margin:8px 0;"><label>Your name (approver)</label><input id="of_name" placeholder="Enter your name before approving/rejecting"></div>`;
+      html += `<div class="approval-track">` + APPROVAL_STEPS.map((step, idx)=>{
+        const a = pkgApprovals[step.key];
+        const prevApproved = idx===0 || pkgApprovals[APPROVAL_STEPS[idx-1].key].status==='Approved';
+        const canAct = a.status==='Pending' && prevApproved;
+        return `<div class="approval-step">
+          <div class="approval-step-head"><b>${step.label}</b><span class="tag ${a.status==='Approved'?'approved':a.status==='Rejected'?'rejected':'pending'}">${a.status}</span></div>
+          ${a.status!=='Pending' ? `<div class="approval-meta">${a.status} by ${a.by} on ${a.date}</div>` :
+            canAct ? `<div class="approval-actions">
+              <button type="button" class="btn small sage" data-pkgapprove="${step.key}">Approve</button>
+              <button type="button" class="btn small rose" data-pkgreject="${step.key}">Reject</button>
+            </div>` : `<div class="approval-meta badge-locked">Waiting on ${APPROVAL_STEPS[idx-1].label}</div>`}
+        </div>`;
+      }).join('') + `</div>`;
+    } else {
+      html += `<div class="ccard-meta">Package approved by HOD, Site Head and TA Head.</div>`;
+      if(!candidate.offerLetterGenerated){
+        html += `<button type="button" class="btn small sage" id="genOfferLetterBtn" style="margin-top:6px;">Generate offer letter</button>`;
+      }
+    }
+  }
+
+  if(candidate.offerLetterGenerated){
+    const ola = candidate.offerLetterApproval;
+    html += `<div class="ccard-meta" style="margin-top:10px;">Offer letter generated.</div>`;
+    if(ola && ola.status==='Pending'){
+      html += `<div class="field" style="margin:8px 0;"><label>Your name (TA Head)</label><input id="ol_name" placeholder="Enter your name before approving/rejecting"></div>
+        <div class="approval-step">
+          <div class="approval-step-head"><b>TA Head — offer letter approval</b><span class="tag pending">Pending</span></div>
+          <div class="approval-actions">
+            <button type="button" class="btn small sage" id="olApproveBtn">Approve</button>
+            <button type="button" class="btn small rose" id="olRejectBtn">Reject</button>
+          </div>
+        </div>`;
+    } else if(ola && ola.status==='Rejected'){
+      html += `<div class="ccard-meta">Offer letter rejected by ${ola.by} on ${ola.date} — revise and resubmit.</div>
+        <button type="button" class="btn small secondary" id="revLetterBtn" style="margin-top:6px;">Resubmit offer letter</button>`;
+    } else if(ola && ola.status==='Approved'){
+      html += `<div class="ccard-meta">Offer letter approved by ${ola.by} on ${ola.date}.</div>`;
+      if(!candidate.offerShared){
+        html += `<button type="button" class="btn small sage" id="shareOfferBtn" style="margin-top:6px;">Share offer with candidate</button>`;
+      } else {
+        html += `<div class="ccard-meta">Shared with candidate on ${candidate.offerShared}.</div>`;
+      }
+    }
+  }
+
+  html += '</div>';
+  return html;
+}
+
+function wireOfferFlowEvents(candidate){
+  const submitCtc = document.getElementById('submitCtcBtn');
+  if(submitCtc) submitCtc.onclick = async ()=>{
+    const ctc = document.getElementById('of_ctc').value.trim();
+    if(!ctc){ showToast('Enter the negotiated CTC'); return; }
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.negotiatedCTC = ctc;
+    c.offerPackageApprovals = emptyApprovalTrack();
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Submitted for HOD → Site Head → TA Head approval');
+    renderMain();
+    openCandidateModal(c, false);
+  };
+  const reviseCtc = document.getElementById('reviseCtcBtn');
+  if(reviseCtc) reviseCtc.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.negotiatedCTC = ''; c.offerPackageApprovals = null;
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    renderMain();
+    openCandidateModal(c, false);
+  };
+  document.querySelectorAll('[data-pkgapprove]').forEach(el=> el.onclick = ()=>decidePackageStep(candidate.id, el.dataset.pkgapprove, 'Approved'));
+  document.querySelectorAll('[data-pkgreject]').forEach(el=> el.onclick = ()=>decidePackageStep(candidate.id, el.dataset.pkgreject, 'Rejected'));
+
+  const genLetter = document.getElementById('genOfferLetterBtn');
+  if(genLetter) genLetter.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerLetterGenerated = true;
+    c.offerLetterApproval = {status:'Pending', by:'', date:''};
+    c.stage = 'Offer';
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Offer letter generated — sent for TA Head approval');
+    renderMain();
+    openCandidateModal(c, false);
+  };
+  const revLetter = document.getElementById('revLetterBtn');
+  if(revLetter) revLetter.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerLetterApproval = {status:'Pending', by:'', date:''};
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    renderMain();
+    openCandidateModal(c, false);
+  };
+  const olApprove = document.getElementById('olApproveBtn');
+  if(olApprove) olApprove.onclick = ()=>decideOfferLetter(candidate.id, 'Approved');
+  const olReject = document.getElementById('olRejectBtn');
+  if(olReject) olReject.onclick = ()=>decideOfferLetter(candidate.id, 'Rejected');
+
+  const shareBtn = document.getElementById('shareOfferBtn');
+  if(shareBtn) shareBtn.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerShared = todayStr();
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Offer shared with candidate');
+    renderMain();
+    openCandidateModal(c, false);
+  };
+}
+
+async function decidePackageStep(candId, stepKey, decision){
+  const name = document.getElementById('of_name').value.trim();
+  if(!name){ showToast('Enter the approver name first'); return; }
+  const c = db.candidates.find(c=>c.id===candId);
+  c.offerPackageApprovals[stepKey] = {status:decision, by:name, date:todayStr()};
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast(`${stepKey==='hod'?'HOD':stepKey==='siteHead'?'Site Head':'TA Head'} ${decision.toLowerCase()}`);
+  renderMain();
+  openCandidateModal(c, false);
+}
+
+async function decideOfferLetter(candId, decision){
+  const name = document.getElementById('ol_name').value.trim();
+  if(!name){ showToast('Enter your name first'); return; }
+  const c = db.candidates.find(c=>c.id===candId);
+  c.offerLetterApproval = {status:decision, by:name, date:todayStr()};
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast(`Offer letter ${decision.toLowerCase()}`);
+  renderMain();
+  openCandidateModal(c, false);
+}
+
+/* Candidate add/edit/detail modal */
+function openCandidateModal(candidate, forceReject, poolMode){
+  const isEdit = !!candidate;
+  const liveJobs = db.jobs.filter(j=>isJobLive(j) || (isEdit && j.id===candidate.jobId));
+  if(!isEdit && liveJobs.length===0){ showToast('Raise a job opening first — a candidate must be linked to a job'); return; }
+  candidate = candidate || {name:'',jobId:liveJobs[0]?.id||'',email:'',phone:'',resumeUrl:'',resumeFile:'',resumeFileName:'',source:SOURCES[0],referredBy:'',notes:'',experienceType:'Fresher',experienceYears:'',
+    gender:'',dob:'',noticePeriod:'',currentCTC:'',expectedCTC:'',currentAddress:'',education:{degree:'',institution:'',year:''},
+    cvSharedWith:'',cvShareStatus:'', shortlisted:false, resumeMatchScore:'', hiredDate:'', activity:[],
+    interviews:[],offerStatus:'',stage:'Applied',appliedDate:todayStr(),rejectionReason:'',negotiatedCTC:'',offerPackageApprovals:null,offerLetterGenerated:false,offerLetterApproval:null,offerShared:''};
+  const edu = candidate.education || {degree:'',institution:'',year:''};
+  const stage = forceReject ? 'Rejected' : candidate.stage;
+  tempResumeData = ''; tempResumeName = ''; tempResumeMatchScore = null;
+
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${isEdit? (forceReject?'Reject candidate':'Candidate details') : 'Add candidate'}</h3>
+    <div class="field"><label>Job code <span style="color:var(--rose-deep);">*</span></label>
+      <select id="c_job" ${isEdit?'disabled':''}>
+        ${liveJobs.map(j=>`<option value="${j.id}" ${j.id===candidate.jobId?'selected':''}>${j.jobCode?j.jobCode+' — ':''}${j.title}</option>`).join('')}
+      </select>
+      ${isEdit?'<div class="ccard-meta">Job opening is locked once a candidate is added.</div>':''}
+    </div>
+    <div class="field"><label>Upload resume ${isEdit?'(optional)':'— details below auto-fill from it'}</label><input id="c_resumefile" type="file" accept=".pdf,.doc,.docx">
+      <div class="file-row" id="c_filerow">${candidate.resumeFileName?'Current file: '+candidate.resumeFileName:'No file uploaded'}</div>
+      ${candidate.resumeFile?`<div class="file-row"><a href="${candidate.resumeFile}" download="${candidate.resumeFileName||'resume'}">Download current resume</a></div>`:''}
+      <div class="ccard-meta" id="c_matchrow">${candidate.resumeMatchScore!=='' && candidate.resumeMatchScore!=null ? `Resume match: ${candidate.resumeMatchScore}% keyword overlap with the job description` : ''}</div>
+    </div>
+    <div class="field"><label>Name</label><input id="c_name" value="${candidate.name}"></div>
+    <div class="field"><label>Email</label><input id="c_email" value="${candidate.email}"></div>
+    <div class="field"><label>Phone</label><input id="c_phone" value="${candidate.phone}"></div>
+    <div class="field"><label>Gender</label>
+      <select id="c_gender">
+        <option value="" ${!candidate.gender?'selected':''}>Prefer not to say</option>
+        <option value="Female" ${candidate.gender==='Female'?'selected':''}>Female</option>
+        <option value="Male" ${candidate.gender==='Male'?'selected':''}>Male</option>
+        <option value="Other" ${candidate.gender==='Other'?'selected':''}>Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Date of birth</label><input id="c_dob" type="date" value="${candidate.dob||''}"></div>
+    <div class="field"><label>Experience</label>
+      <select id="c_expType">
+        <option value="Fresher" ${candidate.experienceType!=='Experienced'?'selected':''}>Fresher</option>
+        <option value="Experienced" ${candidate.experienceType==='Experienced'?'selected':''}>Experienced</option>
+      </select>
+    </div>
+    <div class="field" id="c_expYearsWrap" style="${candidate.experienceType==='Experienced'?'':'display:none'}">
+      <label>Years of experience</label><input id="c_expYears" type="number" min="0" step="0.5" value="${candidate.experienceYears||''}">
+    </div>
+    <div class="field"><label>Notice period</label><input id="c_notice" value="${candidate.noticePeriod||''}" placeholder="e.g. 30 days, Immediate"></div>
+    <div class="field"><label>Current CTC (₹)</label><input id="c_curctc" value="${candidate.currentCTC||''}" placeholder="e.g. 12,00,000"></div>
+    <div class="field"><label>Expected CTC (₹)</label><input id="c_expctc" value="${candidate.expectedCTC||''}" placeholder="e.g. 16,00,000"></div>
+    <div class="field"><label>Current address</label><textarea id="c_address" rows="2">${candidate.currentAddress||''}</textarea></div>
+    <div class="field"><label>Education (highest qualification)</label>
+      <div class="edu-row">
+        <input id="c_edu_degree" placeholder="Degree" value="${edu.degree||''}">
+        <input id="c_edu_institution" placeholder="Institution" value="${edu.institution||''}">
+        <input id="c_edu_year" placeholder="Year" value="${edu.year||''}">
+      </div>
+    </div>
+    ${candidate.referredBy?`<div class="field"><label>Referred by</label><input value="${candidate.referredBy}" disabled></div>`:''}
+    <div class="field"><label>Resume link (optional)</label><input id="c_resume" value="${candidate.resumeUrl}" placeholder="https://…"></div>
+    <div class="field"><label>Source</label>
+      <select id="c_source">${SOURCES.map(s=>`<option ${s===candidate.source?'selected':''}>${s}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Notes</label><textarea id="c_notes" rows="2">${candidate.notes}</textarea></div>
+    ${stage==='Rejected'?`<div class="field"><label>Rejection reason</label><textarea id="c_reason" rows="2">${candidate.rejectionReason||''}</textarea></div>`:''}
+    ${isEdit && !forceReject && candidate.jobId && stage==='Applied' ? renderCvShareSection(candidate) : ''}
+    ${isEdit && !forceReject ? renderOfferFlowSection(candidate) : ''}
+    ${isEdit && stage==='Offer' && !candidate.offerStatus && candidate.offerShared?`
+      <div class="field"><label>Offer outcome</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button type="button" class="btn small sage" id="offerAcceptBtn">Offer accepted</button>
+          <button type="button" class="btn small rose" id="offerDeclineBtn">Offer declined</button>
+          <button type="button" class="btn small ghost" id="offerNoShowBtn">No show</button>
+        </div>
+      </div>`:''}
+    ${candidate.offerStatus?`<div class="field"><label>Offer outcome</label><span class="tag ${candidate.offerStatus==='Accepted'?'approved':candidate.offerStatus==='No Show'?'pending':'rejected'}">${candidate.offerStatus}</span></div>`:''}
+    ${isEdit && candidate.email ? `<div class="field"><button type="button" class="btn small secondary" id="emailStatusBtn">✉ Email candidate a status update</button></div>` : ''}
+    ${isEdit && candidate.jobId && stage!=='Rejected' ? renderInterviewSection(candidate) : ''}
+    ${isEdit ? renderActivityTimeline(candidate) : ''}
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Cancel</button>
+      <button class="btn ${forceReject?'rose':''}" id="saveCandidate">${isEdit?(forceReject?'Confirm reject':'Save changes'):'Add candidate'}</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+
+  const emailStatusBtn = document.getElementById('emailStatusBtn');
+  if(emailStatusBtn) emailStatusBtn.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    const subj = encodeURIComponent(`Update on your application — ${jobTitle(c.jobId)}`);
+    const body = encodeURIComponent(`Hi ${c.name},\n\nJust a quick update: your application${c.jobId?' for '+jobTitle(c.jobId):''} is currently at the "${c.stage}" stage.\n\nWe'll keep you posted as things progress.\n\nBest,\nRecruiting Team`);
+    window.location.href = `mailto:${c.email}?subject=${subj}&body=${body}`;
+    logActivity(c, `Status update emailed to candidate (stage: ${c.stage})`);
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  };
+
+  const expTypeEl = document.getElementById('c_expType');
+  if(expTypeEl) expTypeEl.onchange = (e)=>{
+    document.getElementById('c_expYearsWrap').style.display = e.target.value==='Experienced' ? '' : 'none';
+  };
+
+  document.getElementById('c_resumefile').onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 4*1024*1024){ showToast('File too large (max 4MB)'); e.target.value=''; return; }
+    try{
+      tempResumeData = await fileToDataURL(file);
+      tempResumeName = file.name;
+      document.getElementById('c_filerow').textContent = 'Selected: ' + file.name;
+    }catch(err){ showToast('Could not read file'); return; }
+    autofillFromResume(file, {name:'c_name', email:'c_email', phone:'c_phone', expType:'c_expType', expYears:'c_expYears', jobSelect:'c_job', matchRow:'c_matchrow', matchStore:'c'});
+  };
+
+  const offerAccept = document.getElementById('offerAcceptBtn');
+  if(offerAccept) offerAccept.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerStatus = 'Accepted'; c.stage = 'Hired'; c.hiredDate = todayStr();
+    logActivity(c, 'Offer accepted — candidate hired');
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Offer accepted — candidate hired');
+    closeModal(); renderApp();
+  };
+  const offerDecline = document.getElementById('offerDeclineBtn');
+  if(offerDecline) offerDecline.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerStatus = 'Declined'; c.stage = 'Rejected'; c.rejectionReason = 'Offer declined by candidate';
+    logActivity(c, 'Offer declined by candidate');
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Offer declined — candidate moved to rejected');
+    closeModal(); renderApp();
+  };
+  const offerNoShow = document.getElementById('offerNoShowBtn');
+  if(offerNoShow) offerNoShow.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.offerStatus = 'No Show';
+    logActivity(c, 'Candidate no-show for offer discussion');
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Marked as no show');
+    closeModal(); renderApp();
+  };
+
+  if(isEdit && !forceReject){
+    wireOfferFlowEvents(candidate);
+    wireCvShareEvents(candidate);
+  }
+
+  if(isEdit && candidate.jobId && stage!=='Rejected'){
+    const schedBtn = document.getElementById('scheduleRoundBtn');
+    if(schedBtn) schedBtn.onclick = ()=>openScheduleRoundModal(db.candidates.find(c=>c.id===candidate.id));
+    document.querySelectorAll('[data-addcal]').forEach(el=>{
+      el.onclick = ()=>downloadICS(db.candidates.find(c=>c.id===el.dataset.candid), el.dataset.addcal);
+    });
+    document.querySelectorAll('[data-roundfeedback]').forEach(el=>{
+      el.onclick = ()=>openRoundFeedbackModal(db.candidates.find(c=>c.id===el.dataset.candid), el.dataset.roundfeedback);
+    });
+    document.querySelectorAll('[data-roundnoshow]').forEach(el=>{
+      el.onclick = ()=>markRoundNoShow(el.dataset.candid, el.dataset.roundnoshow);
+    });
+    document.querySelectorAll('[data-roundreschedule]').forEach(el=>{
+      el.onclick = ()=>openScheduleRoundModal(db.candidates.find(c=>c.id===el.dataset.candid), el.dataset.roundreschedule);
+    });
+    document.querySelectorAll('[data-roundreject]').forEach(el=>{
+      el.onclick = ()=>rejectCandidateForNoShow(el.dataset.candid, el.dataset.roundreject);
+    });
+  }
+
+  document.getElementById('saveCandidate').onclick = async ()=>{
+    const name = document.getElementById('c_name').value.trim();
+    if(!name){ showToast('Full name is required'); return; }
+    const newJobId = document.getElementById('c_job').value;
+    if(!newJobId){ showToast('Please select a job opening'); return; }
+    const email = document.getElementById('c_email').value.trim();
+    if(!email){ showToast('Email is required'); return; }
+    const phone = document.getElementById('c_phone').value.trim();
+    if(!phone){ showToast('Phone is required'); return; }
+    const noticeVal = document.getElementById('c_notice').value.trim();
+    if(!noticeVal){ showToast('Notice period is required'); return; }
+    const curCtcVal = document.getElementById('c_curctc').value.trim();
+    if(!curCtcVal){ showToast('Current CTC is required (enter 0 for fresher)'); return; }
+    const expCtcVal = document.getElementById('c_expctc').value.trim();
+    if(!expCtcVal){ showToast('Expected CTC is required'); return; }
+    const eduDegree = document.getElementById('c_edu_degree').value.trim();
+    if(!eduDegree){ showToast('Education degree is required'); return; }
+    const eduInst = document.getElementById('c_edu_institution').value.trim();
+    if(!eduInst){ showToast('Education institution is required'); return; }
+    if(!isEdit){
+      const dupe = db.candidates.find(c=> (email && c.email && c.email.toLowerCase()===email.toLowerCase()) || (phone && c.phone && c.phone===phone));
+      if(dupe && !confirm(`A candidate with this email/phone already exists (${dupe.name}). Add anyway?`)) return;
+    }
+    const expType = document.getElementById('c_expType').value;
+    const data = {
+      id: isEdit?candidate.id:uid(),
+      name,
+      jobId: newJobId,
+      email,
+      phone,
+      resumeUrl: document.getElementById('c_resume').value.trim(),
+      resumeFile: tempResumeData || candidate.resumeFile || '',
+      resumeFileName: tempResumeName || candidate.resumeFileName || '',
+      resumeMatchScore: tempResumeMatchScore!=null ? tempResumeMatchScore : (candidate.resumeMatchScore || ''),
+      source: document.getElementById('c_source').value,
+      referredBy: candidate.referredBy || '',
+      notes: document.getElementById('c_notes').value.trim(),
+      experienceType: expType,
+      experienceYears: expType==='Experienced' ? (document.getElementById('c_expYears').value||'') : '',
+      gender: document.getElementById('c_gender').value,
+      dob: document.getElementById('c_dob').value,
+      noticePeriod: document.getElementById('c_notice').value.trim(),
+      currentCTC: document.getElementById('c_curctc').value.trim(),
+      expectedCTC: document.getElementById('c_expctc').value.trim(),
+      currentAddress: document.getElementById('c_address').value.trim(),
+      education: {
+        degree: document.getElementById('c_edu_degree').value.trim(),
+        institution: document.getElementById('c_edu_institution').value.trim(),
+        year: document.getElementById('c_edu_year').value.trim()
+      },
+      cvSharedWith: candidate.cvSharedWith || '',
+      cvShareStatus: candidate.cvShareStatus || '',
+      shortlisted: candidate.shortlisted || false,
+      hiredDate: candidate.hiredDate || '',
+      activity: candidate.activity || [],
+      interviews: candidate.interviews || [],
+      offerStatus: candidate.offerStatus || '',
+      stage,
+      appliedDate: isEdit?candidate.appliedDate:todayStr(),
+      rejectionReason: stage==='Rejected' ? (document.getElementById('c_reason')?.value.trim()||candidate.rejectionReason||'') : '',
+      negotiatedCTC: candidate.negotiatedCTC || '',
+      offerPackageApprovals: candidate.offerPackageApprovals || null,
+      offerLetterGenerated: candidate.offerLetterGenerated || false,
+      offerLetterApproval: candidate.offerLetterApproval || null,
+      offerShared: candidate.offerShared || ''
+    };
+    if(isEdit) db.candidates = db.candidates.map(c=>c.id===candidate.id?data:c);
+    else {
+      logActivity(data, `Added as a candidate for ${jobTitle(newJobId)}`);
+      db.candidates.push(data);
+    }
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    closeModal();
+    showToast(isEdit?(forceReject?'Candidate rejected':'Candidate updated'):'Candidate added');
+    renderApp();
+  };
+}
+
+/* CV sharing → hiring-manager shortlist/reject, or recruiter direct shortlist */
+function renderCvShareSection(candidate){
+  let html = '<div class="field"><label>CV sharing</label>';
+  if(candidate.cvShareStatus==='Shortlisted'){
+    html += `<div class="ccard-meta">Shortlisted${candidate.cvSharedWith?' by '+candidate.cvSharedWith:' directly by recruiter'} — ready to schedule interviews.</div>`;
+  } else if(candidate.cvShareStatus==='Shared'){
+    html += `
+      <div class="ccard-meta">CV shared with ${candidate.cvSharedWith} — awaiting decision.</div>
+      <div class="approval-actions">
+        <button type="button" class="btn small sage" id="mgrShortlistBtn">Hiring manager: Shortlist</button>
+        <button type="button" class="btn small rose" id="mgrRejectBtn">Hiring manager: Reject</button>
+      </div>
+      <div style="margin-top:6px;"><button type="button" class="btn small secondary" id="directShortlistBtn">Recruiter: Shortlist directly</button></div>
+    `;
+  } else {
+    html += `
+      <select id="cv_manager" style="margin-bottom:8px;">${db.employees.map(e=>`<option value="${e.name}">${e.name} — ${e.role}</option>`).join('')}</select>
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn small secondary" id="shareCvBtn">Share CV with hiring manager</button>
+        <button type="button" class="btn small sage" id="directShortlistBtn">Shortlist directly</button>
+      </div>
+    `;
+  }
+  html += '</div>';
+  return html;
+}
+
+function wireCvShareEvents(candidate){
+  const shareBtn = document.getElementById('shareCvBtn');
+  if(shareBtn) shareBtn.onclick = async ()=>{
+    const manager = document.getElementById('cv_manager').value;
+    if(!manager){ showToast('Select a hiring manager first'); return; }
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.cvSharedWith = manager; c.cvShareStatus = 'Shared';
+    logActivity(c, `CV shared with ${manager}`);
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast(`CV shared with ${manager}`);
+    renderMain();
+    openCandidateModal(c, false, false);
+  };
+  const directBtn = document.getElementById('directShortlistBtn');
+  if(directBtn) directBtn.onclick = async ()=>{
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    c.cvShareStatus = 'Shortlisted';
+    c.shortlisted = true;
+    c.stage = 'Shortlisted';
+    if(!c.cvSharedWith) c.cvSharedWith = '';
+    logActivity(c, 'Shortlisted directly by recruiter');
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast('Candidate shortlisted');
+    renderMain();
+    openCandidateModal(c, false, false);
+  };
+  const mgrShortlist = document.getElementById('mgrShortlistBtn');
+  if(mgrShortlist) mgrShortlist.onclick = async ()=>{
+    await hmShortlist(candidate.id);
+    openCandidateModal(db.candidates.find(c=>c.id===candidate.id), false, false);
+  };
+  const mgrReject = document.getElementById('mgrRejectBtn');
+  if(mgrReject) mgrReject.onclick = async ()=>{
+    await hmReject(candidate.id);
+    closeModal();
+  };
+}
+
+/* Link a pool candidate to a live job opening */
+/* Interview round scheduling / feedback / no-show workflow */
+function decisionLabel(decision){
+  if(decision==='Proceed') return 'Proceed to next round';
+  if(decision==='Selected') return 'Selected';
+  if(decision==='On Hold') return 'On Hold';
+  if(decision==='Reject' || decision==='Rejected') return 'Rejected';
+  return decision;
+}
+function renderInterviewSection(candidate){
+  const rounds = candidate.interviews || [];
+  const nextOptions = nextRoundOptions(candidate);
+  return `
+    <div class="field">
+      <label>Interview rounds</label>
+      ${rounds.length===0 ? '<div class="ccard-meta">No interview rounds scheduled yet.</div>' : rounds.map(r=>`
+        <div class="approval-step">
+          <div class="approval-step-head">
+            <b>${r.round} — ${r.hiringManager}</b>
+            <span class="tag ${r.status==='Completed'?(r.decision==='Reject'||r.decision==='Rejected'?'rejected':'approved'):r.status==='No-show'?'rejected':'pending'}">${r.status}</span>
+          </div>
+          <div class="approval-meta">${r.date}${r.time?' '+r.time:''}</div>
+          ${r.status==='Completed'?`<div class="ccard-meta">Feedback: ${r.feedback}</div>
+            ${r.scorecard?`<div class="ccard-meta">Scorecard — Communication: ${r.scorecard.communication}/5 · Technical/role fit: ${r.scorecard.technical}/5 · Culture fit: ${r.scorecard.culture}/5</div>`:''}
+            <div class="ccard-meta">Decision: ${decisionLabel(r.decision)}</div>`:''}
+          <div class="approval-actions">
+            ${r.status==='Scheduled'?`
+              <button type="button" class="btn small secondary" data-addcal="${r.id}" data-candid="${candidate.id}">📅 Add to calendar</button>
+              <button type="button" class="btn small sage" data-roundfeedback="${r.id}" data-candid="${candidate.id}">Submit feedback</button>
+              <button type="button" class="btn small rose" data-roundnoshow="${r.id}" data-candid="${candidate.id}">Candidate no-show</button>
+            `:''}
+            ${r.status==='No-show'?`
+              <button type="button" class="btn small secondary" data-roundreschedule="${r.id}" data-candid="${candidate.id}">Reschedule</button>
+              <button type="button" class="btn small rose" data-roundreject="${r.id}" data-candid="${candidate.id}">Reject candidate</button>
+            `:''}
+          </div>
+        </div>
+      `).join('')}
+      ${nextOptions.length ? `<button type="button" class="btn small secondary" id="scheduleRoundBtn" style="margin-top:8px;">+ Schedule ${nextOptions.length>1?'next round':nextOptions[0].toLowerCase()}</button>` : ''}
+    </div>
+  `;
+}
+
+function openScheduleRoundModal(candidate, existingRoundId){
+  const rounds = candidate.interviews || [];
+  const existing = existingRoundId ? rounds.find(r=>r.id===existingRoundId) : null;
+  const options = existing ? [existing.round] : nextRoundOptions(candidate);
+  if(!existing && options.length===0){ showToast('All interview rounds are complete for this candidate'); return; }
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${existing?'Reschedule interview':'Schedule interview round'}</h3>
+    <div class="field"><label>Round</label>
+      <select id="ir_round" ${existing?'disabled':''}>
+        ${options.map(o=>`<option value="${o}">${o}</option>`).join('')}
+      </select>
+      ${!existing && options.length>1?'<div class="ccard-meta">Round 2 and Round 3 are optional — you can jump straight to the Final Round.</div>':''}
+    </div>
+    <div class="field"><label>Hiring manager</label>
+      <select id="ir_manager">${db.employees.map(e=>`<option value="${e.name}" ${existing && existing.hiringManager===e.name?'selected':''}>${e.name} — ${e.role}</option>`).join('') || '<option value="">No employees yet</option>'}</select>
+    </div>
+    <div class="field"><label>Date</label><input id="ir_date" type="date" value="${existing?existing.date:todayStr()}"></div>
+    <div class="field"><label>Time</label><input id="ir_time" type="time" value="${existing?existing.time:''}"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="backToCandidate">Back</button>
+      <button class="btn" id="saveRoundBtn">${existing?'Save reschedule':'Schedule round'}</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('backToCandidate').onclick = ()=>openCandidateModal(db.candidates.find(c=>c.id===candidate.id), false);
+  document.getElementById('saveRoundBtn').onclick = async ()=>{
+    const manager = document.getElementById('ir_manager').value;
+    if(!manager){ showToast('Add an employee to assign as hiring manager first'); return; }
+    const roundLabel = existing ? existing.round : document.getElementById('ir_round').value;
+    const date = document.getElementById('ir_date').value;
+    const time = document.getElementById('ir_time').value;
+    if(!date){ showToast('Interview date is required'); return; }
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    if(!c.interviews) c.interviews = [];
+    if(existing){
+      const r = c.interviews.find(r=>r.id===existingRoundId);
+      r.hiringManager = manager; r.round = roundLabel; r.date = date; r.time = time;
+      r.status = 'Scheduled'; r.decision = 'Pending'; r.feedback = ''; r.scorecard = null;
+      logActivity(c, `${roundLabel} rescheduled with ${manager} on ${date}${time?' '+time:''}`);
+    } else {
+      c.interviews.push({id:uid(), round:roundLabel, hiringManager:manager, date, time, status:'Scheduled', decision:'Pending', feedback:'', scorecard:null});
+      if(c.stage==='Applied'||c.stage==='Shortlisted') c.stage = 'Interviewing';
+      logActivity(c, `${roundLabel} scheduled with ${manager} on ${date}${time?' '+time:''}`);
+    }
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    showToast(existing?'Interview rescheduled':'Interview scheduled');
+    renderMain();
+    openCandidateModal(c, false);
+  };
+}
+
+function openRoundFeedbackModal(candidate, roundId){
+  const round = (candidate.interviews||[]).find(r=>r.id===roundId);
+  if(!round) return;
+  const isFinal = round.round === 'Final Round';
+  const ratingOptions = (id, label)=>`
+    <div class="field"><label>${label}</label>
+      <select id="${id}">
+        <option value="5">5 — Excellent</option>
+        <option value="4">4 — Good</option>
+        <option value="3" selected>3 — Average</option>
+        <option value="2">2 — Below average</option>
+        <option value="1">1 — Poor</option>
+      </select>
+    </div>`;
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>${round.round} feedback — ${round.hiringManager}</h3>
+    <div class="ccard-meta">Structured scorecard</div>
+    ${ratingOptions('ir_score_comm','Communication')}
+    ${ratingOptions('ir_score_tech','Technical / role fit')}
+    ${ratingOptions('ir_score_culture','Culture fit')}
+    <div class="field"><label>Additional comments (mandatory)</label><textarea id="ir_feedback" rows="4"></textarea></div>
+    <div class="field"><label>Decision</label>
+      <select id="ir_decision">
+        ${isFinal ? `
+          <option value="Selected">Selected</option>
+          <option value="On Hold">On Hold</option>
+          <option value="Rejected">Rejected</option>
+        ` : `
+          <option value="Proceed">Proceed to next round</option>
+          <option value="Reject">Reject candidate</option>
+        `}
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="backToCandidate">Back</button>
+      <button class="btn" id="saveFeedbackBtn">Submit feedback</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('backToCandidate').onclick = ()=>openCandidateModal(db.candidates.find(c=>c.id===candidate.id), false);
+  document.getElementById('saveFeedbackBtn').onclick = async ()=>{
+    const feedback = document.getElementById('ir_feedback').value.trim();
+    if(!feedback){ showToast('Interview feedback is mandatory'); return; }
+    const decision = document.getElementById('ir_decision').value;
+    const scorecard = {
+      communication: Number(document.getElementById('ir_score_comm').value),
+      technical: Number(document.getElementById('ir_score_tech').value),
+      culture: Number(document.getElementById('ir_score_culture').value)
+    };
+    const c = db.candidates.find(c=>c.id===candidate.id);
+    const r = (c.interviews||[]).find(r=>r.id===roundId);
+    r.feedback = feedback; r.decision = decision; r.status = 'Completed'; r.scorecard = scorecard;
+    logActivity(c, `${r.round} feedback submitted by ${r.hiringManager} (avg score ${Math.round((scorecard.communication+scorecard.technical+scorecard.culture)/3*10)/10}/5) — decision: ${decision}`);
+    if(isFinal){
+      if(decision==='Selected') c.stage = 'Selected';
+      else if(decision==='On Hold') c.stage = 'On Hold';
+      else { c.stage = 'Rejected'; c.rejectionReason = `${r.round} (${r.hiringManager}): ${feedback}`; }
+    } else if(decision==='Reject'){
+      c.stage = 'Rejected';
+      c.rejectionReason = `${r.round} (${r.hiringManager}): ${feedback}`;
+    }
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    if(c.stage==='Rejected'){
+      showToast('Candidate rejected');
+      closeModal(); renderApp();
+    } else if(c.stage==='Selected'){
+      showToast('Candidate selected — add negotiated CTC to proceed');
+      renderMain();
+      openCandidateModal(c, false);
+    } else if(c.stage==='On Hold'){
+      showToast('Candidate placed on hold');
+      closeModal(); renderApp();
+    } else {
+      showToast('Feedback recorded — ready to schedule next round');
+      renderMain();
+      openCandidateModal(c, false);
+    }
+  };
+}
+
+async function markRoundNoShow(candidateId, roundId){
+  const c = db.candidates.find(c=>c.id===candidateId);
+  const r = (c.interviews||[]).find(r=>r.id===roundId);
+  if(!r) return;
+  r.status = 'No-show';
+  logActivity(c, `${r.round} marked as candidate no-show`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Marked as no-show');
+  renderMain();
+  openCandidateModal(c, false);
+}
+
+async function rejectCandidateForNoShow(candidateId, roundId){
+  const c = db.candidates.find(c=>c.id===candidateId);
+  const r = (c.interviews||[]).find(r=>r.id===roundId);
+  c.stage = 'Rejected';
+  c.rejectionReason = `No-show for ${r?r.round:'interview round'}`;
+  logActivity(c, `Rejected due to no-show for ${r?r.round:'interview round'}`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Candidate rejected (no-show)');
+  closeModal();
+  renderApp();
+}
+
+/* Employee referral modal — self-service for any employee */
+function openReferralModal(poolMode){
+  const liveJobs = db.jobs.filter(isJobLive);
+  if(liveJobs.length===0){ showToast('Raise a job opening first — a candidate must be linked to a job'); return; }
+  referralResumeData = ''; referralResumeName = ''; referralResumeMatchScore = null;
+  document.getElementById('modalBody').className = 'modal wide';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-scroll">
+    <h3>Refer a candidate</h3>
+    <div class="field"><label>Your name (referrer)</label>
+      <select id="r_referrer">${db.employees.map(e=>`<option value="${e.name}">${e.name}</option>`).join('')}</select>
+    </div>
+    <div class="field"><label>Job code <span style="color:var(--rose-deep);">*</span></label>
+      <select id="r_job">
+        ${liveJobs.map(j=>`<option value="${j.id}">${j.jobCode?j.jobCode+' — ':''}${j.title}</option>`).join('')}
+      </select>
+    </div>
+    <div class="field"><label>Upload resume</label><input id="r_resumefile" type="file" accept=".pdf,.doc,.docx">
+      <div class="file-row" id="r_filerow">No file uploaded</div>
+      <div class="ccard-meta" id="r_matchrow"></div>
+    </div>
+    <div class="field"><label>Candidate name</label><input id="r_name"></div>
+    <div class="field"><label>Candidate email</label><input id="r_email"></div>
+    <div class="field"><label>Candidate phone</label><input id="r_phone"></div>
+    <div class="field"><label>Gender</label>
+      <select id="r_gender">
+        <option value="" selected>Prefer not to say</option>
+        <option value="Female">Female</option>
+        <option value="Male">Male</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="field"><label>Date of birth</label><input id="r_dob" type="date"></div>
+    <div class="field"><label>Experience</label>
+      <select id="r_expType">
+        <option value="Fresher" selected>Fresher</option>
+        <option value="Experienced">Experienced</option>
+      </select>
+    </div>
+    <div class="field" id="r_expYearsWrap" style="display:none">
+      <label>Years of experience</label><input id="r_expYears" type="number" min="0" step="0.5">
+    </div>
+    <div class="field"><label>Notice period</label><input id="r_notice" placeholder="e.g. 30 days, Immediate"></div>
+    <div class="field"><label>Current CTC (₹)</label><input id="r_curctc" placeholder="e.g. 12,00,000"></div>
+    <div class="field"><label>Expected CTC (₹)</label><input id="r_expctc" placeholder="e.g. 16,00,000"></div>
+    <div class="field"><label>Current address</label><textarea id="r_address" rows="2"></textarea></div>
+    <div class="field"><label>Education (highest qualification)</label>
+      <div class="edu-row">
+        <input id="r_edu_degree" placeholder="Degree">
+        <input id="r_edu_institution" placeholder="Institution">
+        <input id="r_edu_year" placeholder="Year">
+      </div>
+    </div>
+    <div class="field"><label>Why do you recommend them? (optional)</label><textarea id="r_notes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" id="cancelModal">Cancel</button>
+      <button class="btn" id="saveReferral">Submit referral</button>
+    </div>
+    </div>
+  `;
+  document.getElementById('modalBg').classList.add('open');
+  document.getElementById('cancelModal').onclick = closeModal;
+  document.getElementById('r_expType').onchange = (e)=>{
+    document.getElementById('r_expYearsWrap').style.display = e.target.value==='Experienced' ? '' : 'none';
+  };
+  document.getElementById('r_resumefile').onchange = async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    if(file.size > 4*1024*1024){ showToast('File too large (max 4MB)'); e.target.value=''; return; }
+    try{
+      referralResumeData = await fileToDataURL(file);
+      referralResumeName = file.name;
+      document.getElementById('r_filerow').textContent = 'Selected: ' + file.name;
+    }catch(err){ showToast('Could not read file'); return; }
+    autofillFromResume(file, {name:'r_name', email:'r_email', phone:'r_phone', expType:'r_expType', expYears:'r_expYears', jobSelect:'r_job', matchRow:'r_matchrow', matchStore:'r'});
+  };
+  document.getElementById('saveReferral').onclick = async ()=>{
+    const name = document.getElementById('r_name').value.trim();
+    if(!name){ showToast("Candidate's name is required"); return; }
+    const jobId = document.getElementById('r_job').value;
+    if(!jobId){ showToast('Please select a job opening — every candidate must be linked to a job'); return; }
+    const email = document.getElementById('r_email').value.trim();
+    const phone = document.getElementById('r_phone').value.trim();
+    const dupe = db.candidates.find(c=> (email && c.email && c.email.toLowerCase()===email.toLowerCase()) || (phone && c.phone && c.phone===phone));
+    if(dupe && !confirm(`A candidate with this email/phone already exists (${dupe.name}). Add anyway?`)) return;
+    const expType = document.getElementById('r_expType').value;
+    const referrer = document.getElementById('r_referrer').value;
+    const newCandidate = {
+      id:uid(), name,
+      jobId,
+      email,
+      phone,
+      resumeUrl:'', resumeFile: referralResumeData, resumeFileName: referralResumeName,
+      resumeMatchScore: referralResumeMatchScore!=null ? referralResumeMatchScore : '',
+      source:'Referral',
+      referredBy: referrer,
+      notes: document.getElementById('r_notes').value.trim(),
+      experienceType: expType,
+      experienceYears: expType==='Experienced' ? (document.getElementById('r_expYears').value||'') : '',
+      gender: document.getElementById('r_gender').value,
+      dob: document.getElementById('r_dob').value,
+      noticePeriod: document.getElementById('r_notice').value.trim(),
+      currentCTC: document.getElementById('r_curctc').value.trim(),
+      expectedCTC: document.getElementById('r_expctc').value.trim(),
+      currentAddress: document.getElementById('r_address').value.trim(),
+      education: {
+        degree: document.getElementById('r_edu_degree').value.trim(),
+        institution: document.getElementById('r_edu_institution').value.trim(),
+        year: document.getElementById('r_edu_year').value.trim()
+      },
+      cvSharedWith:'', cvShareStatus:'', shortlisted:false, hiredDate:'', activity:[],
+      interviews:[], offerStatus:'',
+      stage:'Applied', appliedDate: todayStr(), rejectionReason:'',
+      negotiatedCTC:'', offerPackageApprovals:null, offerLetterGenerated:false, offerLetterApproval:null, offerShared:''
+    };
+    logActivity(newCandidate, `Referred by ${referrer} for ${jobTitle(jobId)}`);
+    db.candidates.push(newCandidate);
+    await saveKey(STORAGE_KEYS.candidates, db.candidates);
+    closeModal();
+    showToast('Referral submitted — thank you!');
+    renderApp();
+  };
+}
+
+async function moveCandidate(id, dir){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c) return;
+  const idx = STAGES.indexOf(c.stage);
+  const newIdx = Math.min(STAGES.length-1, Math.max(0, idx+Number(dir)));
+  const from = c.stage;
+  c.stage = STAGES[newIdx];
+  if(c.stage!==from) logActivity(c, `Moved from ${from} to ${c.stage}`);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  renderApp();
+}
+
+async function releaseOffer(id){
+  const c = db.candidates.find(c=>c.id===id); if(!c) return;
+  c.offerShared = todayStr();
+  logActivity && logActivity(c, 'Offer released to candidate');
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Offer released to candidate'); renderMain();
+}
+async function offerNoShow(id){
+  const c = db.candidates.find(c=>c.id===id); if(!c) return;
+  c.offerStatus = 'No Show';
+  logActivity && logActivity(c, 'Candidate did not show up for offer discussion');
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Marked as no show'); renderMain();
+}
+async function holdToSelected(id){
+  const c = db.candidates.find(c=>c.id===id);
+  if(!c) return;
+  c.stage = 'Selected';
+  logActivity(c, 'Marked Selected from On Hold');
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast(`${c.name} marked selected`);
+  renderApp();
+}
+
+async function deleteCandidate(id){
+  db.candidates = db.candidates.filter(c=>c.id!==id);
+  await saveKey(STORAGE_KEYS.candidates, db.candidates);
+  showToast('Candidate removed');
+  renderApp();
+}
+
+/* ---------- EVENT WIRING ---------- */
+function attachTabEvents(){
+  const addEmp = document.getElementById('addEmployeeBtn');
+  if(addEmp) addEmp.onclick = ()=>openEmployeeModal(null);
+
+  document.querySelectorAll('[data-editemp]').forEach(el=>{
+    el.onclick = ()=>openEmployeeModal(db.employees.find(e=>e.id===el.dataset.editemp));
+  });
+  document.querySelectorAll('[data-delemp]').forEach(el=>{
+    el.onclick = async ()=>{
+      db.employees = db.employees.filter(e=>e.id!==el.dataset.delemp);
+      await saveKey(STORAGE_KEYS.employees, db.employees);
+      showToast('Employee removed');
+      renderApp();
+    };
+  });
+
+  const addJob = document.getElementById('addJobBtn');
+  if(addJob) addJob.onclick = ()=>openJobModal(null);
+  document.querySelectorAll('[data-detailsjob]').forEach(el=> el.onclick = ()=>openJobDetailsModal(db.jobs.find(j=>j.id===el.dataset.detailsjob)));
+  document.querySelectorAll('[data-editjob]').forEach(el=> el.onclick = ()=>openJobModal(db.jobs.find(j=>j.id===el.dataset.editjob)));
+  document.querySelectorAll('[data-approvejob]').forEach(el=> el.onclick = ()=>openApprovalModal(db.jobs.find(j=>j.id===el.dataset.approvejob)));
+  document.querySelectorAll('[data-togglejob]').forEach(el=> el.onclick = ()=>toggleJobStatus(el.dataset.togglejob));
+  document.querySelectorAll('[data-canceljob]').forEach(el=> el.onclick = ()=>toggleJobCancelled(el.dataset.canceljob));
+  document.querySelectorAll('[data-deljob]').forEach(el=> el.onclick = ()=>deleteJob(el.dataset.deljob));
+
+  const referBtn = document.getElementById('referBtn');
+  if(referBtn) referBtn.onclick = ()=>openReferralModal(false);
+  const referPoolBtn = document.getElementById('referPoolBtn');
+  if(referPoolBtn) referPoolBtn.onclick = ()=>openReferralModal(true);
+
+  const addCand = document.getElementById('addCandidateBtn');
+  if(addCand) addCand.onclick = ()=>openCandidateModal(null, false, false);
+  const addPoolCand = document.getElementById('addPoolCandidateBtn');
+  if(addPoolCand) addPoolCand.onclick = ()=>openCandidateModal(null, false, true);
+
+  document.querySelectorAll('[data-movecand]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); moveCandidate(el.dataset.movecand, el.dataset.dir); });
+  document.querySelectorAll('[data-holdselect]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); holdToSelected(el.dataset.holdselect); });
+  document.querySelectorAll('[data-openoffer]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); openCandidateModal(db.candidates.find(c=>c.id===el.dataset.openoffer),false,false); });
+  document.querySelectorAll('[data-releaseoffer]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); releaseOffer(el.dataset.releaseoffer); });
+  document.querySelectorAll('[data-offernoshowrel]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); offerNoShow(el.dataset.offernoshowrel); });
+  document.querySelectorAll('[data-schedinterview]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); openCandidateModal(db.candidates.find(c=>c.id===el.dataset.schedinterview),false,false); });
+  document.querySelectorAll('[data-delcand]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); deleteCandidate(el.dataset.delcand); });
+  document.querySelectorAll('[data-rejectcand]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); openCandidateModal(db.candidates.find(c=>c.id===el.dataset.rejectcand), true); });
+  document.querySelectorAll('[data-viewcand]').forEach(el=> el.onclick = ()=> openCandidateModal(db.candidates.find(c=>c.id===el.dataset.viewcand), false));
+
+  wireDragDropEvents();
+
+  document.querySelectorAll('[data-poolcheck]').forEach(el=>{
+    el.onchange = ()=>{
+      if(el.checked) poolSelection.add(el.dataset.poolcheck); else poolSelection.delete(el.dataset.poolcheck);
+      renderMain();
+    };
+  });
+  const bulkShortlistBtn = document.getElementById('bulkShortlistBtn');
+  if(bulkShortlistBtn) bulkShortlistBtn.onclick = bulkShortlistSelected;
+  const bulkRejectBtn = document.getElementById('bulkRejectBtn');
+  if(bulkRejectBtn) bulkRejectBtn.onclick = bulkRejectPool;
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  if(bulkDeleteBtn) bulkDeleteBtn.onclick = bulkDeletePool;
+  const bulkClearBtn = document.getElementById('bulkClearBtn');
+  if(bulkClearBtn) bulkClearBtn.onclick = ()=>{ poolSelection.clear(); renderMain(); };
+
+  const hmManager = document.getElementById('hm_manager');
+  if(hmManager) hmManager.onchange = ()=>{ hmViewManagerId = hmManager.value; renderMain(); };
+  document.querySelectorAll('[data-hmshortlist]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); hmShortlist(el.dataset.hmshortlist); });
+  document.querySelectorAll('[data-hmreject]').forEach(el=> el.onclick = (ev)=>{ ev.stopPropagation(); hmReject(el.dataset.hmreject); });
+
+  const mrManager = document.getElementById('mr_manager');
+  if(mrManager) mrManager.onchange = ()=>{ myRequestsManagerId = mrManager.value; renderMain(); };
+
+  const rfSearch = document.getElementById('rf_search');
+  const rfJob = document.getElementById('rf_job');
+  const rfSource = document.getElementById('rf_source');
+  const rfStatus = document.getElementById('rf_status');
+  const rfRejected = document.getElementById('rf_rejected');
+  if(rfSearch) rfSearch.oninput = ()=>{ recruitFilters.search = rfSearch.value; renderMain(); };
+  if(rfJob) rfJob.onchange = ()=>{ recruitFilters.jobId = rfJob.value; renderMain(); };
+  if(rfSource) rfSource.onchange = ()=>{ recruitFilters.source = rfSource.value; renderMain(); };
+  if(rfStatus) rfStatus.onchange = ()=>{ recruitFilters.status = rfStatus.value; renderMain(); };
+  if(rfRejected) rfRejected.onchange = ()=>{ recruitFilters.showRejected = rfRejected.checked; renderMain(); };
+}
+
+loadAll();
+</script>
+</body>
+</html>

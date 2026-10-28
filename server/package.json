@@ -1,0 +1,23 @@
+{
+  "name": "udata-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "bcryptjs": "3.0.2",
+    "dotenv": "16.4.7",
+    "express": "4.22.3",
+    "express-rate-limit": "7.5.0",
+    "helmet": "8.0.0",
+    "jsonwebtoken": "9.0.2",
+    "mammoth": "1.13.0",
+    "mongoose": "8.24.5",
+    "multer": "2.4.0",
+    "pdf-parse": "1.1.1",
+    "pdfkit": "0.16.0"
+  }
+}
