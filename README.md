@@ -4,20 +4,21 @@ This is a new MERN implementation of the uploaded `udata-hr-fixed (4).html` HR a
 
 ## Quickest start: Docker (Windows / Mac / Linux)
 
-Install and start Docker Desktop once. Extract the ZIP, open its `udata-hr-mern` folder and double-click **START-DOCKER.bat** on Windows. Or run:
+Install Node.js 22+ and Docker Desktop. Run `node scripts/setup.mjs` once to create a private `.env` with a random JWT secret and admin password. On Windows, **START-DOCKER.bat** runs setup before starting Docker.
 
 ```sh
+node scripts/setup.mjs
 docker compose up --build -d
 ```
 
-Open **http://localhost:4000**.
+Open the address configured by `APP_HOST` and `APP_PORT` in `.env` (defaults: http://localhost:4000).
 
-Initial local Docker login:
+The first setup prints the generated admin credentials:
 
 - Email: **admin@udata.local**
-- Password: **ChangeMe123!**
+- Password: generated once and saved in `.env`
 
-Change the password in **Account & settings** after signing in. The first start needs internet to download dependencies and Docker images. Docker starts both Express and MongoDB; you do not need to install MongoDB separately. The first start includes the original sample employees, requisitions and candidates.
+Change the password in **Account & settings** after signing in. Docker starts both Express and MongoDB; you do not need to install MongoDB separately. The first start needs internet to download dependencies and Docker images, and includes the original sample employees, requisitions and candidates.
 
 Stop without deleting records:
 
@@ -33,13 +34,13 @@ docker compose up -d
 
 Records and resume files remain in the `mongodb_data` named volume. Do not use `docker compose down -v` unless you intend to erase the database.
 
-If port 4000 is already used, edit compose.yaml from `127.0.0.1:4000:4000` to `127.0.0.1:4001:4000`, then open localhost:4001.
+To change the published address or port, edit `APP_HOST` / `APP_PORT` in `.env`, then restart the app.
 
 ## Start without Docker
 
-Install **Node.js 22 or newer** and **MongoDB Community Server**. Start the MongoDB service with its default local port 27017. Extract the ZIP and double-click **START-WINDOWS.bat**. It creates configuration, installs packages, builds React and starts Express. Keep the terminal open while using the app.
+Install **Node.js 22 or newer** and **MongoDB Community Server**. Start the MongoDB service with its default local port 27017. Extract the ZIP and double-click **START-WINDOWS.bat**. It creates `.env` if needed, installs packages, builds React and starts Express. Keep the terminal open while using the app.
 
-The setup script prints a randomly generated admin password. It also stores it in `server/.env`. The email is `admin@udata.local`.
+The setup script prints a randomly generated admin password and saves it in `.env`. The email is `admin@udata.local`.
 
 Mac/Linux:
 
@@ -64,7 +65,30 @@ For development:
 npm run dev
 ```
 
-React: http://localhost:5173 · Express: http://localhost:4000. Vite proxies `/api` to Express, including the login cookie.
+React: http://localhost:5173 · Express: http://localhost:4000 by default. Change `VITE_DEV_PORT`, `PORT`, or `VITE_API_PROXY_TARGET` in `.env` to adjust the development frontend/backend ports or proxy target.
+
+Run both workspaces together with `npm run dev`, build the frontend with `npm run build`, and start the production server with `npm start`.
+
+## Environment configuration
+
+Run `node scripts/setup.mjs` to generate secure credentials and local defaults. For manual setup, copy `.env.example` to `.env` and replace both `replace-with` values. `.env` is ignored by Git and must never be committed. Existing `server/.env` files remain supported; the root `.env` takes precedence.
+
+Common settings include:
+
+| Setting | Purpose |
+| --- | --- |
+| `MONGODB_URI` | MongoDB connection string for local Node runs |
+| `DOCKER_MONGODB_URI` | MongoDB connection string used by Docker Compose |
+| `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Session signing key and first admin account |
+| `HOST`, `PORT`, `APP_HOST`, `APP_PORT` | Backend bind address and published app address |
+| `VITE_DEV_HOST`, `VITE_DEV_PORT`, `VITE_API_PROXY_TARGET` | Frontend development server and API proxy |
+| `COOKIE_SECURE`, `SESSION_TTL_HOURS` | Secure-cookie mode and login duration |
+| `JSON_BODY_LIMIT_MB`, `UPLOAD_MAX_SIZE_MB`, `EXTRACTED_TEXT_LIMIT` | Request, resume upload and extracted text limits |
+| `LOGIN_RATE_LIMIT_MAX`, `LOGIN_RATE_LIMIT_WINDOW_MS` | Login rate limit |
+| `FEATURE_NOTIFICATIONS`, `FEATURE_REPORTS`, `FEATURE_RESUME_UPLOADS`, `FEATURE_STAFF_ACCOUNTS`, `FEATURE_DATA_BACKUP` | Optional module switches; disabled modules disappear from the UI and their APIs are not registered |
+| `SEED_DEMO` | Add sample data when starting with an empty database |
+
+Restart the server after changing `.env`. Frontend settings are supplied by the backend bootstrap response, so the UI stays in sync with feature switches. Employee, requisition, candidate, interview and other business data continue to be saved to MongoDB—not `.env`.
 
 ## Included modules
 
@@ -121,7 +145,7 @@ Your source HTML contains sample data and depends on `window.storage`. The sampl
 
 To import a compatible JSON containing `employees`, `jobs`, `candidates` and optionally `uploads`:
 
-1. Use a new empty MongoDB database and set `SEED_DEMO=false` in server/.env before starting it.
+1. Use a new empty MongoDB database and set `SEED_DEMO=false` in `.env` before starting it.
 2. Run from the project folder:
 
 ```sh
@@ -151,46 +175,34 @@ docker compose cp ./udata_hr.archive mongodb:/tmp/udata_hr.archive
 docker compose exec mongodb mongorestore --archive=/tmp/udata_hr.archive --gzip
 ```
 
-## Checks
-
-```sh
-npm run build
-npm test
-```
-
-Unit workflow tests run without a database. The integration test runs only when `MONGODB_TEST_URI` points to a dedicated database whose name contains `udata_test`; it deletes that test database. Never point it at a real database.
-
-```sh
-# Linux/macOS example
-MONGODB_TEST_URI=mongodb://127.0.0.1:27017/udata_test npm test
-```
-
-See VALIDATION.md for checks actually performed on this delivery.
-
 ## Common startup problems
 
 - `node` / `npm` not found: install Node.js and reopen your terminal.
 - Docker cannot connect: open Docker Desktop and wait until the engine is running.
-- MongoDB connection error: start MongoDB, or choose Docker. For Atlas, put your own MONGODB_URI in server/.env.
+- Docker reports missing `JWT_SECRET` or `ADMIN_PASSWORD`: run `node scripts/setup.mjs`, then run Docker Compose again.
+- MongoDB connection error: start MongoDB, or choose Docker. For Atlas, put your own MONGODB_URI in `.env`.
 - Invalid secret: run `node scripts/setup.mjs` before the first start. If .env already exists, set JWT_SECRET to at least 32 random characters.
 - Duplicate job code/email: choose a unique value.
 - Record changed: Refresh, reopen the profile and save again.
 - Approval buttons missing: sign in as the assigned approver/admin and complete earlier steps.
-- Startup port already in use: stop the old app, change PORT in server/.env, or change the Docker host port.
+- Startup port already in use: stop the old app and change `PORT` or `APP_PORT` in `.env`.
 
 ## Hosting
 
-The supplied Docker setup binds to localhost for local use. Before public deployment, use your own JWT_SECRET and initial admin password, HTTPS, `COOKIE_SECURE=true`, and private/authenticated MongoDB networking. Do not publish server/.env or expose MongoDB directly. Configure an HTTPS reverse proxy to preserve the request host/protocol for same-origin validation. Font downloads are optional; the UI uses local fallback fonts without them.
+The supplied Docker setup binds to localhost for local use. Before public deployment, use your own JWT_SECRET and initial admin password, HTTPS, `COOKIE_SECURE=true`, and private/authenticated MongoDB networking. Do not publish `.env` or expose MongoDB directly. Configure an HTTPS reverse proxy to preserve the request host/protocol for same-origin validation. Font downloads are optional; the UI uses local fallback fonts without them.
 
 ## Project structure
 
-- client/src/App.jsx: native React UI and module forms.
+- client/src/App.jsx: React workspace screens and page orchestration.
+- client/src/components/ui.jsx: reusable forms, tables, dialogs and approval controls.
+- client/src/shared/: frontend API client and shared HR workflow constants.
 - client/src/styles.css: responsive plum theme.
-- server/src/app.js: authenticated Express API, documents and PDF/calendar downloads.
+- server/src/config.js: validated environment settings and feature switches.
+- server/src/app.js: Express middleware, API assembly and centralized error handling.
+- server/src/routes/: authentication, notifications and reporting endpoints.
 - server/src/models.js: Mongoose schemas.
 - server/src/workflow.js: server workflow rules.
 - server/src/index.js: MongoDB connection and startup seed.
-- server/test: workflow and MongoDB integration tests.
 - scripts/setup.mjs: local configuration creation.
 - scripts/import-data.mjs: empty-database data import.
 - reference/original.html: supplied source retained for comparison.

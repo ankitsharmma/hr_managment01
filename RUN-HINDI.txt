@@ -1,12 +1,11 @@
 U-DATA HR - RUN KARNE KA EASY TARIKA
 
 OPTION 1: DOCKER (SABSE EASY)
-1. Docker Desktop install karke open karo.
+1. Node.js 22+ aur Docker Desktop install karke open karo.
 2. ZIP extract karo.
-3. udata-hr-mern folder me START-DOCKER.bat double-click karo.
+3. udata-hr-mern folder me START-DOCKER.bat double-click karo. Pehli baar secure .env khud create hoga.
 4. Browser me http://localhost:4000 kholo.
-5. Email: admin@udata.local
-   Initial password: ChangeMe123!
+5. Terminal me print hua admin password save karo. Email: admin@udata.local
 6. Login ke baad Account & settings me password change karo.
 
 Pehli baar internet chahiye. Docker MongoDB aur app dono start karega.
@@ -27,4 +26,3 @@ Apna purana actual data import karne ke liye JSON backup chahiye.
 Sirf purani HTML file se live records recover nahi hote.
 
 Full details: README.md
-Performed tests: VALIDATION.md

@@ -13,14 +13,28 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "127.0.0.1:4000:4000"
+      - "${APP_HOST:-127.0.0.1}:${APP_PORT:-4000}:${PORT:-4000}"
     environment:
-      PORT: 4000
-      MONGODB_URI: mongodb://mongodb:27017/udata_hr
-      JWT_SECRET: ${JWT_SECRET:-local-demo-secret-change-before-public-hosting-udata-2026}
+      NODE_ENV: ${NODE_ENV:-production}
+      HOST: 0.0.0.0
+      PORT: ${PORT:-4000}
+      MONGODB_URI: ${DOCKER_MONGODB_URI:-mongodb://mongodb:27017/udata_hr}
+      JWT_SECRET: ${JWT_SECRET:?Run node scripts/setup.mjs to generate local configuration}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@udata.local}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-ChangeMe123!}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Run node scripts/setup.mjs to generate local configuration}
       SEED_DEMO: ${SEED_DEMO:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-12}
+      JSON_BODY_LIMIT_MB: ${JSON_BODY_LIMIT_MB:-12}
+      UPLOAD_MAX_SIZE_MB: ${UPLOAD_MAX_SIZE_MB:-8}
+      EXTRACTED_TEXT_LIMIT: ${EXTRACTED_TEXT_LIMIT:-150000}
+      LOGIN_RATE_LIMIT_MAX: ${LOGIN_RATE_LIMIT_MAX:-30}
+      LOGIN_RATE_LIMIT_WINDOW_MS: ${LOGIN_RATE_LIMIT_WINDOW_MS:-900000}
+      FEATURE_NOTIFICATIONS: ${FEATURE_NOTIFICATIONS:-true}
+      FEATURE_REPORTS: ${FEATURE_REPORTS:-true}
+      FEATURE_RESUME_UPLOADS: ${FEATURE_RESUME_UPLOADS:-true}
+      FEATURE_STAFF_ACCOUNTS: ${FEATURE_STAFF_ACCOUNTS:-true}
+      FEATURE_DATA_BACKUP: ${FEATURE_DATA_BACKUP:-true}
     depends_on:
       mongodb:
         condition: service_healthy

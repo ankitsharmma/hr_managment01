@@ -1,13 +1,239 @@
 import mongoose from 'mongoose';
-const {Schema}=mongoose;
-const approval=new Schema({status:{type:String,enum:['Pending','Approved','Rejected'],default:'Pending'},by:String,date:String},{_id:false});
-const approvals={hod:approval,siteHead:approval,taHead:approval};
-const base={id:{type:String,required:true,unique:true},version:{type:Number,default:0}};
-const options={timestamps:true,strict:true,toJSON:{transform:(_,r)=>{delete r._id;delete r.__v;return r;}}};
-export const Employee=mongoose.model('Employee',new Schema({...base,name:{type:String,required:true},role:String,dept:String,email:String,status:{type:String,enum:['Active','Inactive'],default:'Active'},salary:Number,joinDate:String,managerId:String,candidateId:String},options));
-export const Job=mongoose.model('Job',new Schema({...base,jobCode:{type:String,required:true,unique:true},title:{type:String,required:true},designation:String,dept:String,subDept:String,location:String,openings:{type:Number,min:1,required:true},reqType:String,replacementOf:String,grade:String,ctc:String,jd:String,eligibility:String,qualification:String,roleExpType:String,roleExpYears:String,raisedBy:String,deptHead:String,approvals,assignedRecruiterId:String,closed:Boolean,cancelled:Boolean,postedDate:String},options));
-const interview=new Schema({id:String,round:String,hiringManager:String,date:String,time:String,status:String,decision:String,feedback:String,scorecard:{communication:Number,technical:Number,culture:Number}},{_id:false});
-export const Candidate=mongoose.model('Candidate',new Schema({...base,name:{type:String,required:true},jobId:{type:String,required:true,index:true},email:String,phone:String,resumeUrl:String,resumeFile:String,resumeFileName:String,source:String,referredBy:String,notes:String,experienceType:String,experienceYears:String,gender:String,dob:String,noticePeriod:String,currentCTC:String,expectedCTC:String,currentAddress:String,education:{degree:String,institution:String,year:String},cvSharedWith:String,cvShareStatus:String,shortlisted:Boolean,resumeMatchScore:Number,hiredDate:String,activity:[{date:String,message:String,_id:false}],interviews:[interview],offerStatus:String,stage:{type:String,enum:['Applied','Interviewing','Selected','Hold','Offer','Hired','Rejected']},appliedDate:String,rejectionReason:String,negotiatedCTC:String,offerPackageApprovals:approvals,offerLetterGenerated:Boolean,offerLetterApproval:approval,offerShared:String},options));
-export const User=mongoose.model('User',new Schema({email:{type:String,unique:true},name:String,passwordHash:String,role:{type:String,enum:['admin','recruiter','manager','hod','siteHead','taHead']},employeeId:String},{timestamps:true}));
-export const Upload=mongoose.model('Upload',new Schema({id:{type:String,unique:true},name:String,mime:String,data:Buffer,text:String,createdBy:String},{timestamps:true}));
-export const Notification=mongoose.model('Notification',new Schema({id:{type:String,required:true,unique:true},userId:{type:String,required:true,index:true},actorId:String,actorName:String,type:{type:String,default:'activity'},title:{type:String,required:true},message:{type:String,required:true},href:String,readAt:{type:String,default:''}},{timestamps:true,toJSON:{transform:(_,r)=>{delete r._id;delete r.__v;return r;}}}));
+const {
+  Schema
+} = mongoose;
+const approval = new Schema({
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected'],
+    default: 'Pending'
+  },
+  by: String,
+  date: String
+}, {
+  _id: false
+});
+const approvals = {
+  hod: approval,
+  siteHead: approval,
+  taHead: approval
+};
+const base = {
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  version: {
+    type: Number,
+    default: 0
+  }
+};
+const options = {
+  timestamps: true,
+  strict: true,
+  toJSON: {
+    transform: (_, r) => {
+      delete r._id;
+      delete r.__v;
+      return r;
+    }
+  }
+};
+export const Employee = mongoose.model('Employee', new Schema({
+  ...base,
+  name: {
+    type: String,
+    required: true
+  },
+  role: String,
+  dept: String,
+  email: String,
+  status: {
+    type: String,
+    enum: ['Active', 'Inactive'],
+    default: 'Active'
+  },
+  salary: Number,
+  joinDate: String,
+  managerId: String,
+  candidateId: String
+}, options));
+export const Job = mongoose.model('Job', new Schema({
+  ...base,
+  jobCode: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  designation: String,
+  dept: String,
+  subDept: String,
+  location: String,
+  openings: {
+    type: Number,
+    min: 1,
+    required: true
+  },
+  reqType: String,
+  replacementOf: String,
+  grade: String,
+  ctc: String,
+  jd: String,
+  eligibility: String,
+  qualification: String,
+  roleExpType: String,
+  roleExpYears: String,
+  raisedBy: String,
+  deptHead: String,
+  approvals,
+  assignedRecruiterId: String,
+  closed: Boolean,
+  cancelled: Boolean,
+  postedDate: String
+}, options));
+const interview = new Schema({
+  id: String,
+  round: String,
+  hiringManager: String,
+  date: String,
+  time: String,
+  status: String,
+  decision: String,
+  feedback: String,
+  scorecard: {
+    communication: Number,
+    technical: Number,
+    culture: Number
+  }
+}, {
+  _id: false
+});
+export const Candidate = mongoose.model('Candidate', new Schema({
+  ...base,
+  name: {
+    type: String,
+    required: true
+  },
+  jobId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  email: String,
+  phone: String,
+  resumeUrl: String,
+  resumeFile: String,
+  resumeFileName: String,
+  source: String,
+  referredBy: String,
+  notes: String,
+  experienceType: String,
+  experienceYears: String,
+  gender: String,
+  dob: String,
+  noticePeriod: String,
+  currentCTC: String,
+  expectedCTC: String,
+  currentAddress: String,
+  education: {
+    degree: String,
+    institution: String,
+    year: String
+  },
+  cvSharedWith: String,
+  cvShareStatus: String,
+  shortlisted: Boolean,
+  resumeMatchScore: Number,
+  hiredDate: String,
+  activity: [{
+    date: String,
+    message: String,
+    _id: false
+  }],
+  interviews: [interview],
+  offerStatus: String,
+  stage: {
+    type: String,
+    enum: ['Applied', 'Interviewing', 'Selected', 'Hold', 'Offer', 'Hired', 'Rejected']
+  },
+  appliedDate: String,
+  rejectionReason: String,
+  negotiatedCTC: String,
+  offerPackageApprovals: approvals,
+  offerLetterGenerated: Boolean,
+  offerLetterApproval: approval,
+  offerShared: String
+}, options));
+export const User = mongoose.model('User', new Schema({
+  email: {
+    type: String,
+    unique: true
+  },
+  name: String,
+  passwordHash: String,
+  role: {
+    type: String,
+    enum: ['admin', 'superadmin', 'recruiter', 'manager', 'hod', 'siteHead', 'taHead']
+  },
+  employeeId: String
+}, {
+  timestamps: true
+}));
+export const Upload = mongoose.model('Upload', new Schema({
+  id: {
+    type: String,
+    unique: true
+  },
+  name: String,
+  mime: String,
+  data: Buffer,
+  text: String,
+  createdBy: String
+}, {
+  timestamps: true
+}));
+export const Notification = mongoose.model('Notification', new Schema({
+  id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  actorId: String,
+  actorName: String,
+  type: {
+    type: String,
+    default: 'activity'
+  },
+  title: {
+    type: String,
+    required: true
+  },
+  message: {
+    type: String,
+    required: true
+  },
+  href: String,
+  readAt: {
+    type: String,
+    default: ''
+  }
+}, {
+  timestamps: true,
+  toJSON: {
+    transform: (_, r) => {
+      delete r._id;
+      delete r.__v;
+      return r;
+    }
+  }
+}));
