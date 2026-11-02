@@ -191,6 +191,16 @@ docker compose exec mongodb mongorestore --archive=/tmp/udata_hr.archive --gzip
 
 The supplied Docker setup binds to localhost for local use. Before public deployment, use your own JWT_SECRET and initial admin password, HTTPS, `COOKIE_SECURE=true`, and private/authenticated MongoDB networking. Do not publish `.env` or expose MongoDB directly. Configure an HTTPS reverse proxy to preserve the request host/protocol for same-origin validation. Font downloads are optional; the UI uses local fallback fonts without them.
 
+### Separate Vercel frontend and Render API
+
+1. Create a MongoDB Atlas database and allow connections from your Render service.
+2. In Render, create a **Web Service** from this repository with the repository root as the root directory. Use build command `npm ci && npm run build` and start command `npm start`.
+3. Add these Render environment variables: `NODE_ENV=production`, `MONGODB_URI`, a random `JWT_SECRET` of at least 32 characters, `ADMIN_EMAIL`, a strong `ADMIN_PASSWORD`, `COOKIE_SECURE=true`, `COOKIE_SAME_SITE=none`, and `SEED_DEMO=false` (or `true` to load demo records).
+4. In Vercel, import the same repository with its root directory as the project root. The included `vercel.json` builds and serves `client/dist`. Set `VITE_API_BASE_URL` to the Render service's HTTPS URL, without a trailing slash, then deploy.
+5. Add the deployed Vercel origin (currently `https://hr-managment01-dpy5.vercel.app`) to Render's `FRONTEND_URLS`, then redeploy the API.
+
+The frontend and API are separate deployments, but the browser must accept the API's cross-site session cookie. Some browsers block third-party cookies; using custom frontend and API domains under the same site (for example, `hr.example.com` and `api.example.com`) avoids relying on third-party-cookie access. Never put server secrets in Vercel frontend environment variables.
+
 ## Project structure
 
 - client/src/App.jsx: React workspace screens and page orchestration.

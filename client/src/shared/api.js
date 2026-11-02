@@ -1,7 +1,10 @@
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || '').replace(/\/+$/, '');
+
 export async function api(url, method = 'GET', body) {
   const isForm = body instanceof FormData;
-  const response = await fetch('/api' + url, {
+  const response = await fetch(API_BASE_URL + '/api' + url, {
     method,
+    credentials: 'include',
     headers: body && !isForm ? {
       'Content-Type': 'application/json'
     } : {},

@@ -102,6 +102,23 @@ export function createApp(secret, config = defaultConfig) {
   app.use(helmet({
     contentSecurityPolicy: false
   }));
+  app.use((req, res, next) => {
+    const origin = req.get('origin');
+    if (!origin) return next();
+
+    const sameOrigin = origin === `${req.protocol}://${req.get('host')}`;
+    if (!sameOrigin && !config.frontendUrls.includes(origin)) {
+      return res.status(403).json({ error: 'Origin is not allowed' });
+    }
+
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Vary', 'Origin');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    next();
+  });
   app.use(express.json({
     limit: `${config.jsonBodyLimitMb}mb`
   }));
@@ -127,7 +144,9 @@ export function createApp(secret, config = defaultConfig) {
     }
   }));
   app.use('/api', (req, res, next) => {
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== `${req.protocol}://${req.get('host')}`) {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin &&
+      req.headers.origin !== `${req.protocol}://${req.get('host')}` &&
+      !config.frontendUrls.includes(req.headers.origin)) {
       return res.status(403).json({
         error: 'Cross-origin writes are blocked'
       });

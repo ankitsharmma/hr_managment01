@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ApprovalTrack, Badge, Empty, Field, Modal, Table } from './components/ui.jsx';
-import { api, csv, download } from './shared/api.js';
+import { API_BASE_URL, api, csv, download } from './shared/api.js';
 import { DEFAULT_APP_CONFIG, isAdminRole, nextRounds, safeLink, SECTIONS, statusJob, STAGES, STEPS, today } from './shared/constants.js';
 export default function App() {
   const [user, setUser] = useState(null),
@@ -522,7 +522,7 @@ function CandidateDetail({
           decision
         })} />}<h3>Offer letter</h3>{edit && STEPS.every(([k]) => c.offerPackageApprovals?.[k]?.status === 'Approved') && (!c.offerLetterGenerated || c.offerLetterApproval?.status === 'Rejected') && <button disabled={busy} onClick={() => onAction({
           action: 'generate-letter'
-        })}>{c.offerLetterGenerated ? 'Resubmit letter' : 'Generate letter'}</button>}{c.offerLetterGenerated && <><Badge>{c.offerLetterApproval?.status}</Badge><a className="button secondary" href={`/api/candidates/${c.id}/offer.pdf`} download>Download offer PDF</a>{(isAdminRole(role) || role === 'taHead') && c.offerLetterApproval?.status === 'Pending' && <div className="actions"><button disabled={busy} onClick={() => onAction({
+        })}>{c.offerLetterGenerated ? 'Resubmit letter' : 'Generate letter'}</button>}{c.offerLetterGenerated && <><Badge>{c.offerLetterApproval?.status}</Badge><a className="button secondary" href={`${API_BASE_URL}/api/candidates/${c.id}/offer.pdf`} download>Download offer PDF</a>{(isAdminRole(role) || role === 'taHead') && c.offerLetterApproval?.status === 'Pending' && <div className="actions"><button disabled={busy} onClick={() => onAction({
               action: 'letter-approval',
               decision: 'Approved'
             })}>Approve letter</button><button disabled={busy} className="danger" onClick={() => onAction({
@@ -579,7 +579,7 @@ function Interviews({
         })} required /><Field label="Interviewer" value={s.hiringManager} onChange={hiringManager => setS({
           ...s,
           hiringManager
-        })} required /></div><button disabled={busy}>Schedule round</button></form>}{c.interviews?.map(r => <article key={r.id} className="card"><div className="row"><h3>{r.round}</h3><Badge>{r.status}</Badge></div><p>{r.date} at {r.time} IST · {r.hiringManager}</p><p>Decision: {r.decision} · {r.feedback || 'No feedback yet'}</p>{r.scorecard && <p>Communication {r.scorecard.communication}/5 · Technical {r.scorecard.technical}/5 · Culture {r.scorecard.culture}/5</p>}<div className="actions"><a className="button secondary" href={`/api/candidates/${c.id}/interviews/${r.id}/calendar.ics`} download>Calendar invite</a>{review && r.status === 'Scheduled' && <><button disabled={busy} onClick={() => setFeedback({
+        })} required /></div><button disabled={busy}>Schedule round</button></form>}{c.interviews?.map(r => <article key={r.id} className="card"><div className="row"><h3>{r.round}</h3><Badge>{r.status}</Badge></div><p>{r.date} at {r.time} IST · {r.hiringManager}</p><p>Decision: {r.decision} · {r.feedback || 'No feedback yet'}</p>{r.scorecard && <p>Communication {r.scorecard.communication}/5 · Technical {r.scorecard.technical}/5 · Culture {r.scorecard.culture}/5</p>}<div className="actions"><a className="button secondary" href={`${API_BASE_URL}/api/candidates/${c.id}/interviews/${r.id}/calendar.ics`} download>Calendar invite</a>{review && r.status === 'Scheduled' && <><button disabled={busy} onClick={() => setFeedback({
             roundId: r.id,
             round: r.round,
             decision: r.round === 'Final Round' ? 'Selected' : 'Proceed',

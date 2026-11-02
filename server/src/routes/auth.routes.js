@@ -20,7 +20,7 @@ export function registerPublicAuthRoutes(app, { secret, wrap, config }) {
       expiresIn: `${config.sessionTtlHours}h`
     }), {
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: config.cookieSameSite,
       secure: config.cookieSecure,
       maxAge: config.sessionTtlHours * 60 * 60 * 1000,
       path: '/'
@@ -37,7 +37,12 @@ export function registerPublicAuthRoutes(app, { secret, wrap, config }) {
   }));
 
   app.post('/api/auth/logout', (_, res) => {
-    res.clearCookie('udata_token', { path: '/' });
+    res.clearCookie('udata_token', {
+      httpOnly: true,
+      sameSite: config.cookieSameSite,
+      secure: config.cookieSecure,
+      path: '/'
+    });
     res.json({ ok: true });
   });
 }

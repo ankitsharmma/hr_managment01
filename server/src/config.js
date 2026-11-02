@@ -33,6 +33,13 @@ export function readConfig(env = process.env) {
   if (jwtSecret && (jwtSecret.length < 32 || jwtSecret.startsWith('replace-with'))) {
     throw new Error('JWT_SECRET must be a random value of at least 32 characters');
   }
+  const cookieSameSite = env.COOKIE_SAME_SITE || 'strict';
+  if (!['strict', 'lax', 'none'].includes(cookieSameSite)) {
+    throw new Error('COOKIE_SAME_SITE must be "strict", "lax" or "none"');
+  }
+  if (cookieSameSite === 'none' && !readBoolean(env, 'COOKIE_SECURE', false)) {
+    throw new Error('COOKIE_SECURE must be true when COOKIE_SAME_SITE is "none"');
+  }
 
   return Object.freeze({
     nodeEnv: env.NODE_ENV || 'development',
@@ -40,6 +47,10 @@ export function readConfig(env = process.env) {
     port: readInteger(env, 'PORT', 4000, { max: 65535 }),
     appHost: env.APP_HOST || '127.0.0.1',
     appPort: readInteger(env, 'APP_PORT', 4000, { max: 65535 }),
+    frontendUrls: (env.FRONTEND_URLS || 'http://localhost:5173,http://127.0.0.1:5173,https://hr-managment01-dpy5.vercel.app')
+      .split(',')
+      .map(url => url.trim().replace(/\/+$/, ''))
+      .filter(Boolean),
     mongoUri: env.MONGODB_URI || 'mongodb://127.0.0.1:27017/udata_hr',
     dockerMongoUri: env.DOCKER_MONGODB_URI || 'mongodb://mongodb:27017/udata_hr',
     jwtSecret,
@@ -47,6 +58,7 @@ export function readConfig(env = process.env) {
     adminPassword: env.ADMIN_PASSWORD || '',
     seedDemo: readBoolean(env, 'SEED_DEMO', false),
     cookieSecure: readBoolean(env, 'COOKIE_SECURE', false),
+    cookieSameSite,
     sessionTtlHours: readInteger(env, 'SESSION_TTL_HOURS', 12, { max: 720 }),
     jsonBodyLimitMb: readInteger(env, 'JSON_BODY_LIMIT_MB', 12, { max: 100 }),
     uploadMaxSizeMb: readInteger(env, 'UPLOAD_MAX_SIZE_MB', 8, { max: 50 }),
